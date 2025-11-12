@@ -1,0 +1,36 @@
+{
+  "id": "chatcmpl-CbE4KNzNbPXWnklRVqQMonYw7XuR7",
+  "object": "chat.completion",
+  "created": 1762988252,
+  "model": "gpt-4o-mini-2024-07-18",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "申し訳ありませんが、具体的なファイルの内容や構造を解析することはできません。ただし、Filament Admin Panel のリソースを自動生成するための一般的なコードのテンプレートを提供することは可能です。以下に、リソースの生成に関するサンプルコードを示します。\n\n### 1. `app/Filament/Admin/Resources/UserResource.php`\n\n```php\n<?php\n\nnamespace App\\Filament\\Admin\\Resources;\n\nuse App\\Filament\\Admin\\Resources\\UserResource\\Pages;\nuse App\\Models\\User;\nuse Filament\\Forms;\nuse Filament\\Resources;\nuse Filament\\Tables;\n\nclass UserResource extends Resources\\Resource\n{\n    protected static ?string $model = User::class;\n\n    protected static ?string $navigationIcon = 'heroicon-o-user';\n\n    protected static ?string $navigationLabel = 'Users';\n\n    protected static ?string $pluralLabel = 'Users';\n\n    protected static ?string $slug = 'users';\n\n    public static function form(Forms\\Form $form): Forms\\Form\n    {\n        return $form\n            ->schema([\n                Forms\\Components\\TextInput::make('name')\n                    ->required(),\n                Forms\\Components\\TextInput::make('email')\n                    ->required()\n                    ->email(),\n                Forms\\Components\\TextInput::make('password')\n                    ->required()\n                    ->password(),\n            ]);\n    }\n\n    public static function table(Tables\\Table $table): Tables\\Table\n    {\n        return $table\n            ->columns([\n                Tables\\Columns\\TextColumn::make('id'),\n                Tables\\Columns\\TextColumn::make('name'),\n                Tables\\Columns\\TextColumn::make('email'),\n                Tables\\Columns\\TextColumn::make('created_at')\n                    ->dateTime(),\n            ])\n            ->filters([\n                //\n            ])\n            ->actions([\n                Tables\\Actions\\EditAction::make(),\n            ]);\n    }\n\n    public static function getPages(): array\n    {\n        return [\n            'index' => Pages\\ListUsers::route('/'),\n            'create' => Pages\\CreateUser::route('/create'),\n            'edit' => Pages\\EditUser::route('/{record}/edit'),\n        ];\n    }\n}\n```\n\n### 2. `app/Filament/Admin/Resources/PostResource.php`\n\n```php\n<?php\n\nnamespace App\\Filament\\Admin\\Resources;\n\nuse App\\Filament\\Admin\\Resources\\PostResource\\Pages;\nuse App\\Models\\Post;\nuse Filament\\Forms;\nuse Filament\\Resources;\nuse Filament\\Tables;\n\nclass PostResource extends Resources\\Resource\n{\n    protected static ?string $model = Post::class;\n\n    protected static ?string $navigationIcon = 'heroicon-o-document';\n\n    protected static ?string $navigationLabel = 'Posts';\n\n    protected static ?string $pluralLabel = 'Posts';\n\n    protected static ?string $slug = 'posts';\n\n    public static function form(Forms\\Form $form): Forms\\Form\n    {\n        return $form\n            ->schema([\n                Forms\\Components\\TextInput::make('title')\n                    ->required(),\n                Forms\\Components\\Textarea::make('content')\n                    ->required(),\n                Forms\\Components\\Select::make('user_id')\n                    ->relationship('user', 'name')\n                    ->required(),\n            ]);\n    }\n\n    public static function table(Tables\\Table $table): Tables\\Table\n    {\n        return $table\n            ->columns([\n                Tables\\Columns\\TextColumn::make('id'),\n                Tables\\Columns\\TextColumn::make('title'),\n                Tables\\Columns\\TextColumn::make('user.name')->label('Author'),\n                Tables\\Columns\\TextColumn::make('created_at')\n                    ->dateTime(),\n            ])\n            ->filters([\n                //\n            ])\n            ->actions([\n                Tables\\Actions\\EditAction::make(),\n            ]);\n    }\n\n    public static function getPages(): array\n    {\n        return [\n            'index' => Pages\\ListPosts::route('/'),\n            'create' => Pages\\CreatePost::route('/create'),\n            'edit' => Pages\\EditPost::route('/{record}/edit'),\n        ];\n    }\n}\n```\n\n### 3. リレーションの推論\n\n- `User` モデルは `Post` モデルとの `hasMany` リレーションを持つと仮定し、`Post` モデルの `user_id` フィールドをリレーションとして設定しました。\n- `Post` モデルは `User` モデルとの `belongsTo` リレーションを持つと仮定しました。\n\n### 修正対象ファイルのパスと中身\n\n```markdown\n### 修正対象ファイル\n- `app/Filament/Admin/Resources/UserResource.php`\n- `app/Filament/Admin/Resources/PostResource.php`\n```\n\nこのコードは、Filament Admin Panel のリソースを自動生成するための基本的な構造を示しています。実際のアプリケーションの要件に応じて、フィールドやリレーションを調整してください。",
+        "refusal": null,
+        "annotations": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 162,
+    "completion_tokens": 1063,
+    "total_tokens": 1225,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "audio_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "audio_tokens": 0,
+      "accepted_prediction_tokens": 0,
+      "rejected_prediction_tokens": 0
+    }
+  },
+  "service_tier": "default",
+  "system_fingerprint": "fp_560af6e559"
+}
