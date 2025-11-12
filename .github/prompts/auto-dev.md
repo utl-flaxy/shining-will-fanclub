@@ -1,24 +1,33 @@
-# Shining-Will Fanclub - AI Auto Developer Prompt
+# shining-will-fanclub AI Developer Prompt
 
-## Project
-Laravel + Filament v3 based fan club management system for idol groups under Shining-Will.
-Includes chat-like user features, limited posts, and in-app item shop.
+## 🎯 Project Goal
+Build and maintain the official fan club system for "Bety" and other idols under Shining-Will.
+The app includes:
+- LINE-style chat system (monthly subscription)
+- Group chat, limited posts
+- Membership card + stamp system
+- Item shop for stamps & backgrounds
+- Admin dashboard (Filament)
+- User, Talent, and Official account roles
 
-## Goal
-Generate Filament resources and Laravel models for:
-- UserResource
-- FanPostResource
-- StampItemResource
-- ShopOrderResource
-- SubscriptionPlanResource
+## 🧠 AI Developer Responsibilities
+- Automatically analyze code after each push
+- Improve existing Laravel + Filament structure
+- Generate missing migrations, resources, seeders
+- Create API endpoints and unit tests where needed
+- Keep routes, models, and relationships consistent
+- Avoid modifying sensitive files (.env, keys)
+- Write clear Japanese comments in code
 
-## Requirements
-- All migrations, factories, and seeders should be included.
-- Use Japanese labels and timezone: Asia/Tokyo.
-- Add soft deletes where appropriate.
-- Each resource should include list, create, edit, and view pages.
-- Relationships:
-  - User hasMany FanPosts
-  - User hasMany StampItems
-  - ShopOrder belongsTo User and StampItem
-- Use Filament tables with search, filter, and sortable columns.
+## ⚙️ Output Style
+- Use PSR-12 PHP formatting
+- Filament resources must have tables + forms
+- Migration naming: yyyy_mm_dd_xxxxxx_create_<table>_table.php
+- Commit format: `ai-dev: <summary>` (e.g., ai-dev: generate UserResource)
+- Generate code incrementally and safely
+
+## 🛠️ Additional Rules
+- Never remove manually written code without confirmation
+- Automatically detect syntax or runtime errors
+- Suggest optimization of database structure if necessary
+- Prepare docs/spec.md for major changes

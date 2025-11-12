@@ -1,15 +1,41 @@
-# .github/workflows/auto-dev.yml
 name: AI Auto Developer
 
 on:
+  # 手動実行 or プッシュで自動発火
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js (for dev dependencies)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup PHP (Laravel support)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, intl, gd, bcmath, fileinfo
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Node dependencies
+        run: npm install --silent
 
       - name: Run OpenAI Auto Developer
         uses: openai/dev-action@v1
@@ -19,4 +45,25 @@ jobs:
           model: "gpt-4o-mini"
           instructions: |
             You are the AI Auto Developer for the shining-will-fanclub project.
-            Analyze code, plan features, generate commits, and push updates when ready.
+            Your goal: optimize, generate, and maintain this Laravel + Filament app for idol fan club management.
+
+            - Review recent commits and detect missing migrations, resources, or configuration.
+            - Propose and generate new features based on existing code and specs.
+            - Auto-generate Filament resources (models, tables, forms) when new database tables are added.
+            - Add inline documentation in English or Japanese if unclear.
+            - Run validation on syntax before committing.
+            - Commit changes with a descriptive message in the format:
+              "ai-dev: <summary of change>"
+            - Never overwrite .env, secrets, or sensitive info.
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "AI Developer Bot"
+          git config user.email "bot@shining-will-fanclub.local"
+          git add .
+          if git diff --cached --quiet; then
+            echo "✅ No changes to commit."
+          else
+            git commit -m "ai-dev: auto improvements"
+            git push origin main
+          fi
