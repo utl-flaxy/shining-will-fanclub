@@ -8,6 +8,7 @@ on:
 jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       pull-requests: write
@@ -15,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -26,44 +29,88 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Laravel bootstrap
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
         run: |
           mkdir -p database
-          touch database/database.sqlite
+          [[ -f database/database.sqlite ]] || touch database/database.sqlite
           php artisan key:generate --force || true
           php artisan migrate --force || true
           php artisan optimize:clear || true
 
-      # 🧠 AI生成ステップ（OpenAI APIを直接叩く）
-      - name: Run OpenAI API (generate code)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_ORGANIZATION: org-91d5uX03f1oqsuaLspJtFXeS
+      # ===============================
+      #   AI による Resource 自動生成
+      # ===============================
+      - name: Run OpenAI API (generate resources)
+        id: ai-dev
+        continue-on-error: true
         run: |
           mkdir -p .codex
-          echo "🧠 Sending request to OpenAI API..."
-          curl https://api.openai.com/v1/chat/completions \
+          echo "📡 Sending request to OpenAI API..."
+
+          RESPONSE=$(curl -s https://api.openai.com/v1/responses \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -H "OpenAI-Organization: $OPENAI_ORGANIZATION" \
-            -d '{
-              "model": "gpt-4o-mini",
-              "messages": [
-                {"role": "system", "content": "あなたは shining-will-fanclub プロジェクト専属のAI開発者です。"},
-                {"role": "user", "content": "Laravel + Filament 環境で「自動リソース生成モード」を実行してください。app/Models, database/migrations, app/Filament/Admin/Resources を解析し、不足しているリソース・モデル・マイグレーションを生成。日本語コメント付きでPSR-12準拠。生成内容を.md形式で出力してください。"}
-              ]
-            }' \
-            | jq -r '.choices[0].message.content' > .codex/last-output.md
+            -H "OpenAI-Beta: responses-1" \
+            -d "{
+              \"model\": \"gpt-4o-mini\",
+              \"input\": \"あなたは shining-will-fanclub 専属のAI開発者です。Laravel + Filament のモデル・リソース不足を補う自動開発を行います。既存コードを解析し、不足ファイルの追加コードを生成してください。生成物は随時 '---FILE--- path/to/file.php' 形式で出力し、ファイル内容を続けてください。PSR-12 準拠で。日本語コメントも追加。\"
+            }")
 
-          echo "✅ AI output saved to .codex/last-output.md"
+          echo "$RESPONSE" > .codex/auto-dev-raw.json
 
+          # extract result text
+          echo "$RESPONSE" | jq -r '.output_text' > .codex/auto-dev-output.md || echo "" > .codex/auto-dev-output.md
+
+      # ===============================
+      #   AI 出力を実際のファイルに反映
+      # ===============================
+      - name: Apply generated code
+        run: |
+          echo "📄 Parsing AI output..."
+          python3 << 'EOF'
+import os, re, pathlib
+
+output_path = ".codex/auto-dev-output.md"
+if not os.path.exists(output_path):
+    print("No output file found")
+    exit(0)
+
+content = open(output_path, "r", encoding="utf-8").read()
+
+matches = re.findall(r"---FILE--- (.*?)\n([\s\S]*?)(?=---FILE---|$)", content)
+
+for file_path, file_content in matches:
+    file_path = file_path.strip()
+    full_path = pathlib.Path(file_path)
+
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(full_path, "w", encoding="utf-8") as f:
+        f.write(file_content.strip())
+        print(f"📝 wrote {file_path}")
+
+EOF
+
+      # ===============================
+      #   Git commit & push
+      # ===============================
       - name: Commit & push results
         run: |
           git config user.name "ai-auto-dev[bot]"
           git config user.email "ai-auto-dev[bot]@users.noreply.github.com"
-          git add .codex/last-output.md || true
+
+          git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "chore(ai): auto-generated resources via OpenAI API"
-            git push origin HEAD:main
+            git commit -m "chore(auto-dev): AI-generated resources via OpenAI API"
+            git push origin main
+            echo "✅ Changes pushed."
           else
             echo "No changes to commit."
           fi
+        continue-on-error: true
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
