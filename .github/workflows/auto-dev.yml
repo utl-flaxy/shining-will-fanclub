@@ -1,9 +1,8 @@
 name: AI Auto Developer
 
 on:
-  # 手動実行 or プッシュで自動発火
-  workflow_dispatch:
-  push:
+  workflow_dispatch:       # 手動実行
+  push:                    # mainにpush時にも起動
     branches:
       - main
 
@@ -19,12 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js (for dev dependencies)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Setup PHP (Laravel support)
+      - name: Setup PHP for Laravel
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -33,6 +27,11 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Setup Node.js (for frontend assets)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Install Node dependencies
         run: npm install --silent
@@ -44,17 +43,16 @@ jobs:
         with:
           model: "gpt-4o-mini"
           instructions: |
-            You are the AI Auto Developer for the shining-will-fanclub project.
-            Your goal: optimize, generate, and maintain this Laravel + Filament app for idol fan club management.
-
-            - Review recent commits and detect missing migrations, resources, or configuration.
-            - Propose and generate new features based on existing code and specs.
-            - Auto-generate Filament resources (models, tables, forms) when new database tables are added.
-            - Add inline documentation in English or Japanese if unclear.
-            - Run validation on syntax before committing.
-            - Commit changes with a descriptive message in the format:
-              "ai-dev: <summary of change>"
-            - Never overwrite .env, secrets, or sensitive info.
+            You are the autonomous AI developer of the Shining-Will Fanclub system.
+            Your mission:
+            - Maintain and improve the Laravel + Filament app.
+            - Generate missing migrations, models, Filament resources, and seeders.
+            - Analyze code structure and enhance clarity.
+            - Fix any runtime or syntax issues.
+            - Write clean, PSR-12 compliant code.
+            - Add Japanese comments explaining the logic where needed.
+            - Commit any improvement with a descriptive message in the format:
+              ai-dev: <summary>
 
       - name: Commit and push changes
         run: |
