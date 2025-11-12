@@ -10,7 +10,6 @@ jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
 
-    # すべてのステップで正しい作業ディレクトリを使用
     defaults:
       run:
         working-directory: /home/runner/work/shining-will-fanclub/shining-will-fanclub
@@ -50,4 +49,10 @@ jobs:
           max-tokens: 3000
           temperature: 0.5
 
-      - name: Commit and push
+      - name: Commit and push generated code
+        run: |
+          git config --global user.name "ai-developer"
+          git config --global user.email "ai@openai.dev"
+          git add .
+          git diff --quiet || git commit -m "ai-dev: generate resources automatically"
+          git push origin main
