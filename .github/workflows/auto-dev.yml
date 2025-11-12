@@ -1,37 +1,22 @@
+# .github/workflows/auto-dev.yml
 name: AI Auto Developer
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - name: Run OpenAI Auto Developer
+        uses: openai/dev-action@v1
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
-          php-version: 8.3
-          extensions: mbstring, bcmath, pdo_mysql
-
-      - name: Install dependencies
-        run: composer install --no-progress --prefer-dist
-
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      - name: AI Developer
-        uses: openai-labs/ai-dev-action@v2
-        with:
-          prompt-file: .github/prompts/auto-dev.md
-          model: gpt-5
-          auto-retry: true
+          model: "gpt-4o-mini"
+          instructions: |
+            You are the AI Auto Developer for the shining-will-fanclub project.
+            Analyze code, plan features, generate commits, and push updates when ready.
