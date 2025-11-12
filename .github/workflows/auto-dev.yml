@@ -56,6 +56,7 @@ jobs:
         env:
           # 必須: GitHub に登録したキーを使う
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_ORGANIZATION: org-91d5uX03f1oqsuaLspJtFXeS # ← ここにあなたの組織IDを入れる
         with:
           model: gpt-4o-mini
           prompt: |
