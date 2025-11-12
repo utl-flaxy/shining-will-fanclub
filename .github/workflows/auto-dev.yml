@@ -1,7 +1,7 @@
 name: AI Auto Developer
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 手動実行
   push:
     branches:
       - main
@@ -18,48 +18,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP for Laravel
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, pdo_mysql, intl, gd, bcmath, fileinfo
-          tools: composer:v2
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
-
-      - name: Setup Node.js
+      - name: Set up Node.js (for scripts if needed)
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Node dependencies
-        run: npm install --silent
+      - name: Set up PHP environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer
 
-      # ✅ ここが重要：正しいActionパスに修正
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
       - name: Run OpenAI Auto Developer
-        uses: openai/dev-actions@v1
+        uses: josStorer/openai-github-actions@v1
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           model: gpt-4o-mini
-          instructions: |
-            You are the AI Developer of shining-will-fanclub.
-            - Analyze and improve Laravel + Filament codebase.
-            - Fix syntax errors, missing migrations, or resources.
-            - Auto-generate new Filament resources and models.
-            - Write clean PSR-12 compliant code.
-            - Use Japanese comments for clarity.
-            - Commit changes as "ai-dev: <summary>".
+          temperature: 0.4
+          max_tokens: 3000
+          instruction: |
+            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
+            目的: Laravel + Filament の管理パネルを安定稼働させること。
+            実施タスク:
+            - コード内の構文・型・ルーティングエラーを自動修正
+            - 不足している Filament Resource / Migration / Model を生成
+            - コード品質を PSR-12 に準拠させる
+            - PHP8.3 と Laravel12.× に最適化
+            - 変更はコミットメッセージ "ai-dev: ..." で main に直接反映
 
       - name: Commit and push changes
         run: |
-          git config user.name "AI Developer Bot"
-          git config user.email "bot@shining-will-fanclub.local"
+          git config --global user.name "ai-developer"
+          git config --global user.email "ai@openai.dev"
           git add .
-          if git diff --cached --quiet; then
-            echo "✅ No changes to commit."
-          else
-            git commit -m "ai-dev: auto improvements"
-            git push origin main
-          fi
+          git commit -m "ai-dev: automated code improvement" || echo "No changes"
+          git push origin main
