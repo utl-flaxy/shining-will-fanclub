@@ -8,7 +8,6 @@ on:
 jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
@@ -16,14 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Verify composer.json in repo root
-        run: |
-          echo "📂 workspace = $GITHUB_WORKSPACE"
-          ls -la "$GITHUB_WORKSPACE"
-          test -f "$GITHUB_WORKSPACE/composer.json" || (echo "composer.json not found at repo root" && exit 1)
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -31,53 +22,47 @@ jobs:
           php-version: '8.3'
           tools: composer
 
-      - name: Install PHP dependencies (composer install)
+      - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Laravel bootstrap (cache/migrate if possible)
-        env:
-          APP_ENV: testing
-          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
+      - name: Laravel bootstrap
         run: |
           mkdir -p database
-          [[ -f database/database.sqlite ]] || touch database/database.sqlite
+          touch database/database.sqlite
           php artisan key:generate --force || true
           php artisan migrate --force || true
           php artisan optimize:clear || true
 
-      # === AI 実行 ===
-      - name: Run OpenAI Resource Generator
-        uses: openai/openai-github-actions@v1
-        with:
-          apiKey: ${{ secrets.OPENAI_API_KEY }}
-          organization: org-91d5uX03f1oqsuaLspJtFXeS
-          model: gpt-4o-mini
-          input: |
-            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
-            タスク: Laravel + Filament 環境で「自動リソース生成モード」を実行。
-            - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
-            - 不足している Filament Resource / Migration / Model を自動生成。
-            - Laravel 12, PHP 8.3 に準拠し、日本語コメント付きで可読性高く作成。
-            - PSR-12 コーディング規約に準拠。
-            - 既存コードを壊さず、差分のみ作成。
-            - composer dump-autoload が通るように調整。
-            出力結果は .codex/last-output.md に保存。
-
-      - name: Handle AI failure gracefully
-        if: failure()
+      # 🧠 AI生成ステップ（OpenAI APIを直接叩く）
+      - name: Run OpenAI API (generate code)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_ORGANIZATION: org-91d5uX03f1oqsuaLspJtFXeS
         run: |
-          echo "⚠️ AI step failed (likely API quota or auth error)."
-          echo "::notice title=AI Fallback::OpenAI quota exceeded or API error. Please update OPENAI_API_KEY billing or retry later."
+          mkdir -p .codex
+          echo "🧠 Sending request to OpenAI API..."
+          curl https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "OpenAI-Organization: $OPENAI_ORGANIZATION" \
+            -d '{
+              "model": "gpt-4o-mini",
+              "messages": [
+                {"role": "system", "content": "あなたは shining-will-fanclub プロジェクト専属のAI開発者です。"},
+                {"role": "user", "content": "Laravel + Filament 環境で「自動リソース生成モード」を実行してください。app/Models, database/migrations, app/Filament/Admin/Resources を解析し、不足しているリソース・モデル・マイグレーションを生成。日本語コメント付きでPSR-12準拠。生成内容を.md形式で出力してください。"}
+              ]
+            }' \
+            | jq -r '.choices[0].message.content' > .codex/last-output.md
 
-      - name: Commit & push changes
+          echo "✅ AI output saved to .codex/last-output.md"
+
+      - name: Commit & push results
         run: |
           git config user.name "ai-auto-dev[bot]"
           git config user.email "ai-auto-dev[bot]@users.noreply.github.com"
-          git add -A
+          git add .codex/last-output.md || true
           if ! git diff --cached --quiet; then
-            git commit -m "chore(ai): auto-generated resources via AI"
+            git commit -m "chore(ai): auto-generated resources via OpenAI API"
             git push origin HEAD:main
           else
             echo "No changes to commit."
