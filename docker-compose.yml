@@ -1,0 +1,50 @@
+version: "3.8"
+
+name: shining-will-fanclub # ← プロジェクト名を固定して干渉防止
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fanclub-app
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "8011:8000" # ← shining-will-shop(8000/8001)と被らない
+    depends_on:
+      - mysql
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:dummykeyfordocker=
+      DB_CONNECTION: mysql
+      DB_HOST: fanclub-mysql
+      DB_PORT: 3306
+      DB_DATABASE: fanclub
+      DB_USERNAME: fanuser
+      DB_PASSWORD: fanpass
+    command: >
+      bash -c "
+        composer install &&
+        php artisan key:generate &&
+        php artisan serve --host=0.0.0.0 --port=8000
+      "
+
+  mysql:
+    image: mysql:8.0
+    container_name: fanclub-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: orachan0314
+      MYSQL_DATABASE: fanclub
+      MYSQL_USER: fanuser
+      MYSQL_PASSWORD: fanpass
+    ports:
+      - "3311:3306" # ← shining-will-shop(3306/3307)と被らない
+    volumes:
+      - fanclub_db_data:/var/lib/mysql
+
+volumes:
+  fanclub_db_data:
