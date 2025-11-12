@@ -1,8 +1,8 @@
 name: AI Auto Developer
 
 on:
-  workflow_dispatch:       # 手動実行
-  push:                    # mainにpush時にも起動
+  workflow_dispatch:
+  push:
     branches:
       - main
 
@@ -28,7 +28,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Setup Node.js (for frontend assets)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -36,23 +36,21 @@ jobs:
       - name: Install Node dependencies
         run: npm install --silent
 
+      # ✅ ここが重要：正しいActionパスに修正
       - name: Run OpenAI Auto Developer
-        uses: openai/dev-action@v1
+        uses: openai/dev-actions@v1
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
-          model: "gpt-4o-mini"
+          model: gpt-4o-mini
           instructions: |
-            You are the autonomous AI developer of the Shining-Will Fanclub system.
-            Your mission:
-            - Maintain and improve the Laravel + Filament app.
-            - Generate missing migrations, models, Filament resources, and seeders.
-            - Analyze code structure and enhance clarity.
-            - Fix any runtime or syntax issues.
-            - Write clean, PSR-12 compliant code.
-            - Add Japanese comments explaining the logic where needed.
-            - Commit any improvement with a descriptive message in the format:
-              ai-dev: <summary>
+            You are the AI Developer of shining-will-fanclub.
+            - Analyze and improve Laravel + Filament codebase.
+            - Fix syntax errors, missing migrations, or resources.
+            - Auto-generate new Filament resources and models.
+            - Write clean PSR-12 compliant code.
+            - Use Japanese comments for clarity.
+            - Commit changes as "ai-dev: <summary>".
 
       - name: Commit and push changes
         run: |
