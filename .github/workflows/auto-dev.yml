@@ -1,4 +1,4 @@
-name: AI Auto Developer
+name: AI Auto Developer (Resource Generator)
 
 on:
   workflow_dispatch: # 手動実行
@@ -18,11 +18,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js (for scripts if needed)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Set up PHP environment
         uses: shivammathur/setup-php@v2
         with:
@@ -32,28 +27,34 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
 
-      - name: Run OpenAI Auto Developer
+      - name: Run OpenAI Auto Resource Generator
         uses: josStorer/openai-github-actions@v1
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
           model: gpt-4o-mini
-          temperature: 0.4
-          max_tokens: 3000
+          temperature: 0.5
+          max_tokens: 3500
           instruction: |
             あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
-            目的: Laravel + Filament の管理パネルを安定稼働させること。
-            実施タスク:
-            - コード内の構文・型・ルーティングエラーを自動修正
-            - 不足している Filament Resource / Migration / Model を生成
-            - コード品質を PSR-12 に準拠させる
-            - PHP8.3 と Laravel12.× に最適化
-            - 変更はコミットメッセージ "ai-dev: ..." で main に直接反映
+            現在のタスク: Laravel + Filament 環境で「自動リソース生成モード」を実行すること。
 
-      - name: Commit and push changes
+            🎯 目的:
+            - Filament Resource / Model / Migration を自動生成し、管理パネルを拡張する。
+            - 既存データベース構造や app/Models ディレクトリを解析して、必要なリソースを生成。
+            - 不足しているカラムや関連（belongsTo / hasMany）を補完。
+            - リソースは app/Filament/Admin/Resources に作成。
+            - 既存に類似するResourceがある場合は安全にスキップする。
+            - Migration ファイルは database/migrations に出力。
+            - Model ファイルは app/Models に出力。
+            - Laravel 12 / PHP 8.3 に準拠し、PSR-12 スタイルで書く。
+            - コメントは日本語で付与し、AIが理解できるようにする。
+            - コミットメッセージは "ai-dev: generate resources automatically"
+
+      - name: Commit and push generated code
         run: |
           git config --global user.name "ai-developer"
           git config --global user.email "ai@openai.dev"
           git add .
-          git commit -m "ai-dev: automated code improvement" || echo "No changes"
+          git commit -m "ai-dev: generate resources automatically" || echo "No changes"
           git push origin main
