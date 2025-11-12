@@ -18,30 +18,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up PHP environment
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
-          tools: composer
-
+      # composer.jsonが正しく見つかるようにworking-directoryを明示指定
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
+        working-directory: ./
 
       - name: Run OpenAI Codex Action
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt: |
-            あなたは shining-will-fanclub プロジェクト専属の AI 開発者です。
-            現在のタスク: Laravel＋Filament 環境で「自動リソース生成モード」を実行します。
-            • Filament Resource／Model／Migration を自動生成してください。
-            • app/Models、database/migrations、app/Filament/Admin/Resources の構造を解析。
-            • Laravel 12、PHP 8.3、PSR-12 準拠でコード生成。
-            • 日本語コメント付きでわかりやすく記述。
-            • 変更はコミットメッセージ "ai-dev: generate resources automatically" で main に反映。
+            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
+            現在のタスク: Laravel + Filament 環境で「自動リソース生成モード」を実行します。
+            ・Filament Resource / Model / Migration を自動生成
+            ・app/Models、database/migrations、app/Filament/Admin/Resources を解析して不足を補完
+            ・Laravel 12 / PHP 8.3 に準拠
+            ・日本語コメントを含める
+            ・生成後、自動コミット
           model: gpt-4o-mini
           max-tokens: 3000
           temperature: 0.5
+          working-directory: ./
 
       - name: Commit and push generated code
         run: |
@@ -50,3 +47,4 @@ jobs:
           git add .
           git diff --quiet || git commit -m "ai-dev: generate resources automatically"
           git push origin main
+        working-directory: ./
