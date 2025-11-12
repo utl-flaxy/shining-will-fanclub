@@ -3,17 +3,11 @@ name: AI Auto Developer (Resource Generator)
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
-
-    # プロジェクトルートに composer.json がある前提
-    defaults:
-      run:
-        working-directory: .
 
     permissions:
       contents: write
@@ -25,35 +19,81 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify composer.json location
+      # ルートに composer.json があるか確認
+      - name: Verify composer.json in repo root
         run: |
-          echo "📂 Checking for composer.json..."
-          pwd
-          ls -la
+          echo "📂 workspace = $GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE"
+          test -f "$GITHUB_WORKSPACE/composer.json" || (echo "composer.json not found at repo root" && exit 1)
 
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress
-
-      - name: Run OpenAI Codex Action
-        uses: openai/codex-action@v1
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          php-version: '8.3'
+          tools: composer
+
+      - name: Install PHP dependencies (composer install)
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # 環境が起動できるか軽く整える（必要最小限）
+      - name: Laravel bootstrap (cache/migrate if possible)
+        env:
+          APP_ENV: testing
+          APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          mkdir -p database
+          [[ -f database/database.sqlite ]] || touch database/database.sqlite
+          php artisan key:generate --force || true
+          php artisan migrate --force || true
+          php artisan optimize:clear || true
+
+      # === AI 実行（OpenAI Codex Action）===
+      - name: Run OpenAI Codex (generate resources)
+        id: codex
+        uses: openai/codex-action@v1
+        env:
+          # 必須: GitHub に登録したキーを使う
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        with:
+          model: gpt-4o-mini
           prompt: |
             あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
-            今回のタスク: Laravel + Filament 環境で「自動リソース生成モード」を実行。
+            タスク: Laravel + Filament 環境で「自動リソース生成モード」を実行。
             - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
             - 不足している Filament Resource / Migration / Model を自動生成。
             - Laravel 12, PHP 8.3 に準拠し、日本語コメント付きで可読性高く作成。
             - PSR-12 コーディング規約に準拠。
-            - コード生成後、自動で main ブランチにコミット。
-          model: gpt-4o-mini
-          max-tokens: 3000
-          temperature: 0.5
+            - 生成物はワークスペースに直接ファイルとして出力。
+            重要:
+            - 既存コードは壊さない。差分のみ作成。
+            - 実行手順や説明は README に追記。
+            - 生成後、composer dump-autoload が通るようにする。
 
-      - name: Commit and push generated code
+          # 追加オプション（ドキュメント準拠のキーのみ）
+          output-file: .codex/last-output.md
+          sandbox: workspace-write
+          working-directory: ${{ github.workspace }}
+
+        continue-on-error: true
+
+      # === フォールバック: AI がコケたら中立終了コメント ===
+      - name: Handle AI failure gracefully
+        if: steps.codex.outcome != 'success'
         run: |
-          git config --global user.name "ai-developer"
-          git config --global user.email "ai@openai.dev"
-          git add .
-          git diff --quiet || git commit -m "ai-dev: generate resources automatically"
-          git push origin main
+          echo "⚠️ AI step failed (likely API quota). Falling back."
+          echo "::notice title=AI Fallback::OpenAI quota exceeded or API error. Please update OPENAI_API_KEY billing or retry later."
+
+      # 変更があればコミットしてプッシュ
+      - name: Commit & push changes
+        run: |
+          git config user.name "ai-auto-dev[bot]"
+          git config user.email "ai-auto-dev[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(ai): auto-generated resources via AI (or fallback)"
+            git push origin HEAD:main
+          else
+            echo "No changes to commit."
+          fi
