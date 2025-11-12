@@ -50,12 +50,21 @@ jobs:
           php artisan optimize:clear || true
 
       # === AI 実行（OpenAI Codex Action）===
-      - name: Run OpenAI Codex (generate resources)
-        id: codex
-        uses: openai/codex-action@v1
+      - name: Run OpenAI Resource Generator
+        uses: openai/openai-github-actions@v1
+        with:
+          apiKey: ${{ secrets.OPENAI_API_KEY }}
+          organization: org-91d5uX03f1oqsuaLspJtFXeS
+          model: gpt-4o-mini
+          input: |
+            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
+            Laravel + Filament 環境で不足しているリソース・モデル・マイグレーションを自動生成。
+            - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
+            - PSR-12 準拠、コメント日本語。
+            - 出力結果は .codex/last-output.md に保存。
         env:
-          # 必須: GitHub に登録したキーを使う
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
           OPENAI_ORGANIZATION: org-91d5uX03f1oqsuaLspJtFXeS # ← ここにあなたの組織IDを入れる
         with:
           model: gpt-4o-mini
