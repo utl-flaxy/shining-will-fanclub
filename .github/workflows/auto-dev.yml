@@ -10,10 +10,10 @@ jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
 
-    # composer.json がある階層を正しく指定
+    # プロジェクトルートに composer.json がある前提
     defaults:
       run:
-        working-directory: shining-will-fanclub
+        working-directory: .
 
     permissions:
       contents: write
@@ -28,8 +28,8 @@ jobs:
       - name: Verify composer.json location
         run: |
           echo "📂 Checking for composer.json..."
-          ls -la
           pwd
+          ls -la
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
