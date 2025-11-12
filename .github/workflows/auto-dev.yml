@@ -10,9 +10,10 @@ jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
 
+    # すべてのステップで正しい作業ディレクトリを使用
     defaults:
       run:
-        working-directory: /home/runner/work/shining-will-fanclub/
+        working-directory: /home/runner/work/shining-will-fanclub/shining-will-fanclub
 
     permissions:
       contents: write
@@ -26,9 +27,9 @@ jobs:
 
       - name: Verify composer.json location
         run: |
-          echo "Checking for composer.json..."
+          echo "📂 Checking for composer.json..."
           ls -la /home/runner/work/shining-will-fanclub/
-          ls -la /home/runner/work/shining-will-fanclub/shining-will-fanclub || true
+          ls -la /home/runner/work/shining-will-fanclub/shining-will-fanclub/
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
@@ -38,18 +39,15 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt: |
-            shining-will-fanclub プロジェクト専属AIエンジニアです。
-            Filament Resource / Model / Migration を解析し、自動生成・補完してください。
-            Laravel 12 / PHP 8.3 準拠で PSR-12 に沿って記述。
-            必要に応じて日本語コメントを追加。
+            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
+            今回のタスク: Laravel + Filament 環境で「自動リソース生成モード」を実行。
+            - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
+            - 不足している Filament Resource / Migration / Model を自動生成。
+            - Laravel 12, PHP 8.3 に準拠し、日本語コメント付きで可読性高く作成。
+            - PSR-12 コーディング規約に準拠。
+            - コード生成後、自動で main ブランチにコミット。
           model: gpt-4o-mini
-          temperature: 0.5
           max-tokens: 3000
+          temperature: 0.5
 
-      - name: Commit and push generated code
-        run: |
-          git config --global user.name "ai-developer"
-          git config --global user.email "ai@openai.dev"
-          git add .
-          git diff --quiet || git commit -m "ai-dev: generate resources automatically"
-          git push origin main
+      - name: Commit and push
