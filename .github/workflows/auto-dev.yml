@@ -10,10 +10,10 @@ jobs:
   ai-auto-dev:
     runs-on: ubuntu-latest
 
-    # composer.json がある階層を明示
+    # composer.json がある階層を正しく指定
     defaults:
       run:
-        working-directory: ./shining-will-fanclub
+        working-directory: shining-will-fanclub
 
     permissions:
       contents: write
