@@ -1,92 +1,250 @@
-以下は、Laravel + Filament 環境における「自動リソース生成モード」の内容を解析し、不足しているリソース、モデル、マイグレーションを生成するための手順を示す `README.md` 形式の内容です。この文書は、日本語のコメント付きで PSR-12 準拠です。
+Laravel + Filament 環境で自動リソース生成モードを実行し、`app/Models`, `database/migrations`, `app/Filament/Admin/Resources` を解析して、不足しているリソース・モデル・マイグレーションを生成する手順をMarkdown形式で記述します。
+
+以下は、その手順に基づいて生成される内容です。
 
 ```markdown
-# 自動リソース生成モード
+# 自動リソース生成モードの手順
 
-このドキュメントでは、Laravel + Filament 環境における自動リソース生成手順を示します。このプロセスは、app/Models、database/migrations、および app/Filament/Admin/Resources を解析し、不足しているリソース、モデル、マイグレーションを自動生成することを目的としています。
+このドキュメントでは、Laravel + Filament 環境で不足しているリソース、モデル、およびマイグレーションファイルを自動生成する手順を示します。
 
 ## 前提条件
 
-- Laravel >= 8.x
-- Filament >= 2.x
+- Laravel プロジェクトがセットアップされていること
+- Filament がインストールされていること
+- 必要な PHP バージョンがインストールされていること
 
-## ステップ 1: app/Models ディレクトリの解析
+## ステップ 1: `app/Models` ディレクトリの解析
 
-まず、`app/Models` ディレクトリを確認し、モデルが存在しないデータベーステーブルを特定します。これには、データベース内のテーブル名を取得し、それに対応するモデルが存在するかを確認します。
+まず、`app/Models` ディレクトリ内のモデルを解析します。このディレクトリには、すでに存在するモデルが格納されています。
+
+## ステップ 2: `database/migrations` ディレクトリの解析
+
+次に、`database/migrations` ディレクトリを解析し、マイグレーションファイルを確認します。このファイルには、データベーススキーマが定義されています。
+
+## ステップ 3: `app/Filament/Admin/Resources` ディレクトリの解析
+
+`app/Filament/Admin/Resources` ディレクトリを確認し、Filamentリソースが存在するかどうかを判断します。
+
+## ステップ 4: 不足しているリソースの生成
+
+### 生成するモデル
+
+以下のモデルが不足していると仮定します。
+
+- `Product` モデル
+- `Category` モデル
+
+これらのモデルを作成します。
+
+### 生成するマイグレーション
+
+以下のマイグレーションが不足していると仮定します。
+
+- `create_products_table` マイグレーション
+- `create_categories_table` マイグレーション
+
+これらのマイグレーションを作成します。
+
+### 生成するリソース
+
+以下のリソースが不足していると仮定します。
+
+- `ProductResource`
+- `CategoryResource`
+
+これらのリソースを作成します。
+
+## ステップ 5: 生成ファイルのコード例
+
+以下は、生成されるモデル、マイグレーション、リソースの例です。
+
+### `app/Models/Product.php`
 
 ```php
-// app/Console/Commands/GenerateResources.php
+<?php
 
-namespace App\Console\Commands;
+namespace App\Models;
 
-use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Class Product
+ * 
+ * @package App\Models
+ */
+class Product extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'price',
+        'category_id',
+    ];
+}
+```
+
+### `app/Models/Category.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Class Category
+ * 
+ * @package App\Models
+ */
+class Category extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+    ];
+}
+```
+
+### `database/migrations/xxxx_xx_xx_create_products_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class GenerateResources extends Command
+/**
+ * Class CreateProductsTable
+ * 
+ * @package Database\Migrations
+ */
+class CreateProductsTable extends Migration
 {
-    protected $signature = 'resources:generate';
-    
-    protected $description = '不足しているリソース、モデル、マイグレーションを生成します。';
-    
-    public function handle()
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
     {
-        $tables = Schema::getConnection()->getDoctrineSchemaManager()->listTableNames();
-        foreach ($tables as $table) {
-            // モデルとリソースの存在を確認
-            if (!class_exists("App\\Models\\" . ucfirst($table))) {
-                $this->generateModel($table);
-            }
-            if (!file_exists(app_path("Filament/Admin/Resources/"). ucfirst($table) . "Resource.php")) {
-                $this->generateResource($table);
-            }
-            // マイグレーションのチェック（必要に応じて実装）
-        }
-        $this->info('リソースの生成が完了しました。');
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->decimal('price', 8, 2);
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
-    protected function generateModel($table)
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
     {
-        // モデルファイルの生成
-        $modelTemplate = "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass " . ucfirst($table) . " extends Model\n{\n    // ここにモデルのプロパティやメソッドを追加します。\n}\n";
-        file_put_contents(app_path("Models/") . ucfirst($table) . ".php", $modelTemplate);
-        $this->info("モデル {$table} が生成されました。");
-    }
-
-    protected function generateResource($table)
-    {
-        // リソースファイルの生成
-        $resourceTemplate = "<?php\n\nnamespace App\\Filament\\Admin\\Resources;\n\nuse Filament\\Resources\\Resource;\n\nclass " . ucfirst($table) . "Resource extends Resource\n{\n    protected static string \$model = '\\App\\Models\\" . ucfirst($table) . "';\n    // リソースの設定を追加します。\n}\n";
-        file_put_contents(app_path("Filament/Admin/Resources/") . ucfirst($table) . "Resource.php", $resourceTemplate);
-        $this->info("リソース {$table} が生成されました。");
+        Schema::dropIfExists('products');
     }
 }
 ```
 
-## ステップ 2: database/migrations ディレクトリの確認
-
-データベースマイグレーションが不完全または存在しない場合、必要なマイグレーションを生成します。
+### `database/migrations/xxxx_xx_xx_create_categories_table.php`
 
 ```php
-protected function generateMigration($table)
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Class CreateCategoriesTable
+ * 
+ * @package Database\Migrations
+ */
+class CreateCategoriesTable extends Migration
 {
-    // マイグレーションファイルの生成
-    $migrationTemplate = "<?php\n\nuse Illuminate\\Database\\Migrations\\Migration;\nuse Illuminate\\Database\\Schema\\Schema;\n\nclass Create" . ucfirst($table) . "Table extends Migration\n{\n    public function up()\n    {\n        Schema::create('" . $table . "', function (Blueprint \$table) {\n            \$table->id();\n            // その他のカラムを追加します。\n            \$table->timestamps();\n        });\n    }\n\n    public function down()\n    {\n        Schema::dropIfExists('" . $table . "' );\n    }\n}\n";
-    file_put_contents(database_path("migrations/") . date('Y_m_d_His') . "_create_" . $table . "_table.php", $migrationTemplate);
-    $this->info("マイグレーション {$table} が生成されました。");
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('categories');
+    }
 }
 ```
 
-## ステップ 3: コマンドの実行
+### `app/Filament/Admin/Resources/ProductResource.php`
 
-上記の手順を実施するために、コマンドラインから以下のコマンドを実行します。
+```php
+<?php
 
-```bash
-php artisan resources:generate
+namespace App\Filament\Admin\Resources;
+
+use App\Models\Product;
+use Filament\Resources\Resource;
+
+/**
+ * Class ProductResource
+ * 
+ * @package App\Filament\Admin\Resources
+ */
+class ProductResource extends Resource
+{
+    protected static string $model = Product::class;
+
+    // その他の設定...
+}
 ```
 
-## まとめ
+### `app/Filament/Admin/Resources/CategoryResource.php`
 
-このスクリプトを実行することで、不足しているモデル、リソース、マイグレーションの自動生成が行われます。フィールドの定義やリソースの設定は、プロジェクトに応じて手動で調整してください。
+```php
+<?php
+
+namespace App\Filament\Admin\Resources;
+
+use App\Models\Category;
+use Filament\Resources\Resource;
+
+/**
+ * Class CategoryResource
+ * 
+ * @package App\Filament\Admin\Resources
+ */
+class CategoryResource extends Resource
+{
+    protected static string $model = Category::class;
+
+    // その他の設定...
+}
 ```
 
-この `.md` ファイルは、基本的な構造を提供していますが、実際のプロジェクトに合わせてカスタマイズが必要です。生成されたクラスやマイグレーションには、具体的なカラムやリレーションを定義するための追加のロジックを実装してください。
+## 結論
+
+この手順に従って、プロジェクト内の不足しているモデル、マイグレーション、およびリソースを生成することができます。これにより、Filamentを使用した管理パネルでの管理が容易になります。
+```
+
+このテンプレートは、実際のプロジェクトの構成に基づいて適宜調整してください。生成するモデル、マイグレーション、リソースの具体的な詳細は、実際の要件に応じて変更が必要です。
