@@ -19,7 +19,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ルートに composer.json があるか確認
       - name: Verify composer.json in repo root
         run: |
           echo "📂 workspace = $GITHUB_WORKSPACE"
@@ -35,7 +34,6 @@ jobs:
       - name: Install PHP dependencies (composer install)
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      # 環境が起動できるか軽く整える（必要最小限）
       - name: Laravel bootstrap (cache/migrate if possible)
         env:
           APP_ENV: testing
@@ -49,7 +47,7 @@ jobs:
           php artisan migrate --force || true
           php artisan optimize:clear || true
 
-      # === AI 実行（OpenAI Codex Action）===
+      # === AI 実行 ===
       - name: Run OpenAI Resource Generator
         uses: openai/openai-github-actions@v1
         with:
@@ -58,51 +56,28 @@ jobs:
           model: gpt-4o-mini
           input: |
             あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
-            Laravel + Filament 環境で不足しているリソース・モデル・マイグレーションを自動生成。
-            - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
-            - PSR-12 準拠、コメント日本語。
-            - 出力結果は .codex/last-output.md に保存。
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-          OPENAI_ORGANIZATION: org-91d5uX03f1oqsuaLspJtFXeS # ← ここにあなたの組織IDを入れる
-        with:
-          model: gpt-4o-mini
-          prompt: |
-            あなたは shining-will-fanclub プロジェクト専属のAI開発者です。
             タスク: Laravel + Filament 環境で「自動リソース生成モード」を実行。
             - app/Models, database/migrations, app/Filament/Admin/Resources を解析。
             - 不足している Filament Resource / Migration / Model を自動生成。
             - Laravel 12, PHP 8.3 に準拠し、日本語コメント付きで可読性高く作成。
             - PSR-12 コーディング規約に準拠。
-            - 生成物はワークスペースに直接ファイルとして出力。
-            重要:
-            - 既存コードは壊さない。差分のみ作成。
-            - 実行手順や説明は README に追記。
-            - 生成後、composer dump-autoload が通るようにする。
+            - 既存コードを壊さず、差分のみ作成。
+            - composer dump-autoload が通るように調整。
+            出力結果は .codex/last-output.md に保存。
 
-          # 追加オプション（ドキュメント準拠のキーのみ）
-          output-file: .codex/last-output.md
-          sandbox: workspace-write
-          working-directory: ${{ github.workspace }}
-
-        continue-on-error: true
-
-      # === フォールバック: AI がコケたら中立終了コメント ===
       - name: Handle AI failure gracefully
-        if: steps.codex.outcome != 'success'
+        if: failure()
         run: |
-          echo "⚠️ AI step failed (likely API quota). Falling back."
+          echo "⚠️ AI step failed (likely API quota or auth error)."
           echo "::notice title=AI Fallback::OpenAI quota exceeded or API error. Please update OPENAI_API_KEY billing or retry later."
 
-      # 変更があればコミットしてプッシュ
       - name: Commit & push changes
         run: |
           git config user.name "ai-auto-dev[bot]"
           git config user.email "ai-auto-dev[bot]@users.noreply.github.com"
           git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "chore(ai): auto-generated resources via AI (or fallback)"
+            git commit -m "chore(ai): auto-generated resources via AI"
             git push origin HEAD:main
           else
             echo "No changes to commit."
