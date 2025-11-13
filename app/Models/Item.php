@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'name',
+        'description',
         'type',
         'price',
+        'is_active',
         'image_path',
-        'description',
     ];
 
-    public function users() {
-        return $this->belongsToMany(User::class, 'user_items');
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

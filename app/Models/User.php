@@ -40,4 +40,26 @@ class User extends Authenticatable
     public function items() {
         return $this->belongsToMany(Item::class, 'user_items');
     }
+
+        public function subscriptions()
+    {
+        return $this->hasMany(\App\Models\Subscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(\App\Models\Subscription::class)
+            ->where('status', 'active');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order::class);
+    }
+
+    public function stampCard()
+    {
+        return $this->hasOne(\App\Models\StampCard::class);
+    }
+
 }

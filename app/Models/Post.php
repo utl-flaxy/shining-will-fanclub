@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Post extends Model
 {
@@ -13,15 +13,12 @@ class Post extends Model
         'user_id',
         'title',
         'body',
-        'is_premium',
         'image_path',
+        'video_url',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
-    }
-
-    public function comments() {
-        return $this->hasMany(PostComment::class);
     }
 }
