@@ -1,4 +1,4 @@
-申し訳ありませんが、具体的なファイルの内容や構造を解析することはできません。ただし、Filament Admin PanelのUIを自動生成・改善するための一般的なコードの雛形を提供することは可能です。以下は、Filamentのリソースファイルの例です。
+申し訳ありませんが、具体的なファイルの内容や構造を解析することはできません。しかし、Filament Admin PanelのUIを自動生成・改善するための一般的なコードテンプレートを提供することはできます。以下は、Filamentのリソースに基づいて自動生成されたForm、Table、RelationManagerの例です。
 
 ### 1. `app/Filament/Admin/Resources/UserResource.php`
 
@@ -8,20 +8,24 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\UserResource\Pages;
-use App\Models\User;
+use App\Filament\Admin\Resources\UserResource\RelationManagers;
 use Filament\Forms;
-use Filament\Resources;
 use Filament\Tables;
+use Filament\Resources\Resource;
+use Filament\Resources\Form;
+use Filament\Resources\Table;
 
-class UserResource extends Resources\Resource
+class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?string $navigationGroup = 'User Management';
+    protected static ?string $navigationLabel = 'Users';
 
-    public static function form(Forms\Form $form): Forms\Form
+    protected static ?string $slug = 'users';
+
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -32,33 +36,31 @@ class UserResource extends Resources\Resource
                     ->email(),
                 Forms\Components\TextInput::make('password')
                     ->required()
-                    ->password(),
-                Forms\Components\Select::make('role')
-                    ->options([
-                        'admin' => 'Admin',
-                        'user' => 'User',
-                    ])
-                    ->required(),
+                    ->password()
+                    ->minLength(8),
             ]);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('role'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(),
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\PostsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
@@ -72,40 +74,22 @@ class UserResource extends Resources\Resource
 }
 ```
 
-### 2. `app/Filament/Admin/Resources/PostResource.php`
+### 2. `app/Filament/Admin/Resources/UserResource/RelationManagers/PostsRelationManager.php`
 
 ```php
 <?php
 
-namespace App\Filament\Admin\Resources;
+namespace App\Filament\Admin\Resources\UserResource\RelationManagers;
 
-use App\Filament\Admin\Resources\PostResource\Pages;
-use App\Models\Post;
-use Filament\Forms;
-use Filament\Resources;
+use App\Filament\Admin\Resources\PostResource;
+use Filament\Resources\RelationManager;
 use Filament\Tables;
 
-class PostResource extends Resources\Resource
+class PostsRelationManager extends RelationManager
 {
-    protected static ?string $model = Post::class;
+    protected static string $relationship = 'posts';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
-    protected static ?string $navigationGroup = 'Content Management';
-
-    public static function form(Forms\Form $form): Forms\Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->required(),
-                Forms\Components\Textarea::make('content')
-                    ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->required(),
-            ]);
-    }
+    protected static ?string $recordTitleAttribute = 'title';
 
     public static function table(Tables\Table $table): Tables\Table
     {
@@ -113,63 +97,122 @@ class PostResource extends Resources\Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id'),
                 Tables\Columns\TextColumn::make('title'),
-                Tables\Columns\TextColumn::make('user.name')->label('Author'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime(),
+            ]);
+    }
+}
+```
+
+### 修正対象ファイルのパスと中身
+
+```markdown
+### 修正対象ファイル
+- `app/Filament/Admin/Resources/UserResource.php`
+
+```php
+<?php
+
+namespace App\Filament\Admin\Resources;
+
+use App\Filament\Admin\Resources\UserResource\Pages;
+use App\Filament\Admin\Resources\UserResource\RelationManagers;
+use Filament\Forms;
+use Filament\Tables;
+use Filament\Resources\Resource;
+use Filament\Resources\Form;
+use Filament\Resources\Table;
+
+class UserResource extends Resource
+{
+    protected static ?string $model = User::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-user';
+
+    protected static ?string $navigationLabel = 'Users';
+
+    protected static ?string $slug = 'users';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('name')
+                    ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->required()
+                    ->email(),
+                Forms\Components\TextInput::make('password')
+                    ->required()
+                    ->password()
+                    ->minLength(8),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('name'),
+                Tables\Columns\TextColumn::make('email'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime(),
             ])
             ->filters([
                 //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\PostsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPosts::route('/'),
-            'create' => Pages\CreatePost::route('/create'),
-            'edit' => Pages\EditPost::route('/{record}/edit'),
+            'index' => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }
 ```
 
-### 3. `app/Filament/Admin/Resources/UserResource/Pages/ListUsers.php`
+### 修正対象ファイル
+- `app/Filament/Admin/Resources/UserResource/RelationManagers/PostsRelationManager.php`
 
 ```php
 <?php
 
-namespace App\Filament\Admin\Resources\UserResource\Pages;
-
-use App\Filament\Admin\Resources\UserResource;
-use Filament\Pages\Actions;
-use Filament\Resources\Pages\ListRecords;
-
-class ListUsers extends ListRecords
-{
-    protected static string $resource = UserResource::class;
-}
-```
-
-### 4. `app/Filament/Admin/Resources/PostResource/Pages/ListPosts.php`
-
-```php
-<?php
-
-namespace App\Filament\Admin\Resources\PostResource\Pages;
+namespace App\Filament\Admin\Resources\UserResource\RelationManagers;
 
 use App\Filament\Admin\Resources\PostResource;
-use Filament\Pages\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\RelationManager;
+use Filament\Tables;
 
-class ListPosts extends ListRecords
+class PostsRelationManager extends RelationManager
 {
-    protected static string $resource = PostResource::class;
+    protected static string $relationship = 'posts';
+
+    protected static ?string $recordTitleAttribute = 'title';
+
+    public static function table(Tables\Table $table): Tables\Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('title'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime(),
+            ]);
+    }
 }
 ```
 
-### まとめ
+```
 
-上記のコードは、Filament Admin Panelのリソースを自動生成するための基本的な雛形です。リレーションの推論（`hasMany`, `belongsTo`）は、モデルの定義に基づいて行う必要があります。これらのファイルを適切なディレクトリに配置し、モデルとリレーションを正しく設定することで、Filament Admin Panelを効果的に活用できます。
+このコードは、Filament Admin Panelのリソースを自動生成するための基本的な構造を示しています。具体的なモデルやリレーションに応じて、適宜調整が必要です。
