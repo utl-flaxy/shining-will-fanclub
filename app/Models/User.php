@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -17,6 +18,9 @@ class User extends Authenticatable
         'avatar',
         'membership_level',
         'points',
+        'theme_id',
+        'member_color',
+        'is_active_member',
     ];
 
     protected $hidden = [
@@ -24,42 +28,65 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // 🔗 リレーション
-    public function posts() {
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_active_member'  => 'boolean',
+    ];
+
+    public function theme()
+    {
+        return $this->belongsTo(Theme::class);
+    }
+
+    public function talent()
+    {
+        return $this->hasOne(Talent::class);
+    }
+
+    public function talkMessages()
+    {
+        return $this->hasMany(TalkMessage::class);
+    }
+
+    public function posts()
+    {
         return $this->hasMany(Post::class);
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(PostComment::class);
     }
 
-    public function messages() {
-        return $this->hasMany(ChatMessage::class);
-    }
-
-    public function items() {
+    public function items()
+    {
         return $this->belongsToMany(Item::class, 'user_items');
     }
 
-        public function subscriptions()
+    public function subscriptions()
     {
-        return $this->hasMany(\App\Models\Subscription::class);
+        return $this->hasMany(Subscription::class);
     }
 
     public function activeSubscription()
     {
-        return $this->hasOne(\App\Models\Subscription::class)
+        return $this->hasOne(Subscription::class)
             ->where('status', 'active');
     }
 
     public function orders()
     {
-        return $this->hasMany(\App\Models\Order::class);
+        return $this->hasMany(Order::class);
     }
 
     public function stampCard()
     {
-        return $this->hasOne(\App\Models\StampCard::class);
+        return $this->hasOne(StampCard::class);
     }
 
+    /** タレント判定 */
+    public function isTalent(): bool
+    {
+        return $this->hasRole('talent') && $this->talent !== null;
+    }
 }

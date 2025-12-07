@@ -10,18 +10,11 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedBigInteger('user_id'); // 投稿者（管理者）
-            $table->string('title');              // タイトル
-            $table->text('body')->nullable();     // 本文（リッチテキスト）
-            $table->string('image_path')->nullable(); // 画像
-            $table->string('video_url')->nullable();  // YouTube / TikTok など
-
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('title', 200);
+            $table->text('body')->nullable();
+            $table->enum('status', ['公開', '下書き'])->default('下書き');
             $table->timestamps();
-
-            $table->foreign('user_id')
-                ->references('id')->on('users')
-                ->cascadeOnDelete();
         });
     }
 

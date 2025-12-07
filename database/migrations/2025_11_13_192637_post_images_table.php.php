@@ -9,11 +9,9 @@ return new class extends Migration {
     {
         Schema::create('post_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id')
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->string('path');                       // storage パス
-            $table->unsignedTinyInteger('sort_order')->default(0);
+            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
+            $table->string('path'); // 画像の保存パス
+            $table->unsignedInteger('sort_order')->default(1); // ⭐ 並び順
             $table->timestamps();
         });
     }

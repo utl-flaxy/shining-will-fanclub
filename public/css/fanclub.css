@@ -1,0 +1,333 @@
+/* 画面全体 */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+/* スマホっぽい枠（PCでも中央に寄せる） */
+.app-shell {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: radial-gradient(circle at top left, #1b1b2f 0%, #050509 60%, #000 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 共通ヘッダー */
+.app-header {
+  padding: 16px 18px 8px;
+}
+
+.app-header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f770ff, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.app-title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-title-main {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.app-title-sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.app-header-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.app-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+/* セクションタイトル */
+.app-section-title {
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.app-section-caption {
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 検索バー */
+.app-search-wrapper {
+  padding: 14px 18px 0;
+}
+
+.app-search-box {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 999px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+.app-search-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(148, 163, 184, 0.8);
+  box-sizing: border-box;
+}
+
+/* コンテンツラッパー（リストなど） */
+.app-content {
+  flex: 1;
+  padding: 12px 10px 80px;
+  overflow-y: auto;
+}
+
+/* 区切りタイトル（PINNED / ALL CHATS） */
+.app-divider-label {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-align: center;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+/* トークリストカード */
+.chat-card {
+  background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.35), rgba(15, 23, 42, 0.95));
+  border-radius: 18px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #e5e7eb;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+  margin-bottom: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  text-decoration: none;
+}
+
+.chat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 1);
+}
+
+.chat-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.chat-avatar--orange {
+  background: linear-gradient(135deg, #ffb347, #ff7746);
+}
+
+.chat-avatar--green {
+  background: linear-gradient(135deg, #6ee7b7, #22c55e);
+}
+
+.chat-avatar--yellow {
+  background: linear-gradient(135deg, #facc15, #f97316);
+}
+
+.chat-avatar--blue {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+.chat-avatar--white {
+  background: linear-gradient(135deg, #e5e7eb, #9ca3af);
+}
+
+.chat-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #bfdbfe;
+}
+
+.chat-preview {
+  font-size: 12px;
+  margin-top: 2px;
+  color: #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.chat-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(251, 146, 60, 0.2);
+  border: 1px solid rgba(251, 146, 60, 0.7);
+  color: #fed7aa;
+  font-size: 10px;
+}
+
+/* 下部ナビ */
+.app-tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  max-width: 480px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.98);
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 8px 10px;
+  backdrop-filter: blur(18px);
+}
+
+.app-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.app-tab-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  margin: 0 auto 2px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-tab--active {
+  color: #f9fafb;
+}
+
+.app-tab--active .app-tab-icon {
+  border-color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
+}
+
+/* トーク詳細（吹き出し） */
+.chat-room {
+  flex: 1;
+  padding: 12px 12px 80px;
+  overflow-y: auto;
+}
+
+.chat-room-header {
+  text-align: center;
+  padding: 8px 0 4px;
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.chat-bubble-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.chat-bubble-row.me {
+  justify-content: flex-end;
+}
+
+.chat-bubble {
+  max-width: 78%;
+  padding: 8px 10px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.chat-bubble.me {
+  background: #22c55e;
+  color: #052e16;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble.them {
+  background: #e5e7eb;
+  color: #111827;
+  border-bottom-left-radius: 4px;
+}
+
+/* 入力エリア */
+.chat-input-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  max-width: 480px;
+  width: 100%;
+  padding: 8px 10px 10px;
+  background: rgba(15, 23, 42, 0.98);
+  border-top: 1px solid rgba(31, 41, 55, 0.9);
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input-text {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 8px 14px;
+  font-size: 13px;
+  outline: none;
+  background: rgba(15, 23, 42, 0.9);
+  color: #f9fafb;
+}
+
+.chat-input-send {
+  border-radius: 999px;
+  border: none;
+  padding: 0 16px;
+  font-size: 13px;
+  background: #f97316;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+}

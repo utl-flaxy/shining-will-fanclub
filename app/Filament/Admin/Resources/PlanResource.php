@@ -7,50 +7,69 @@ use App\Models\Plan;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Resources\Resource;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
 
 class PlanResource extends Resource
 {
     protected static ?string $model = Plan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
-    protected static ?string $navigationGroup = 'サブスク管理';
-    protected static ?string $navigationLabel = 'プラン一覧';
+    protected static ?string $navigationIcon  = 'heroicon-o-credit-card';
+    protected static ?string $navigationGroup = 'Plans & Subscription';
+    protected static ?string $navigationLabel = 'プラン管理';
 
-    public static function form(Form $form): Form
+    /*
+    |--------------------------------------------------------------------------
+    | Form（作成・編集）
+    |--------------------------------------------------------------------------
+    */
+    public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
+
             Forms\Components\TextInput::make('name')
                 ->label('プラン名')
                 ->required()
                 ->maxLength(255),
 
-            Forms\Components\TextInput::make('description')
-                ->label('説明文（任意）')
-                ->maxLength(500),
+            Forms\Components\Textarea::make('description')
+                ->label('説明')
+                ->rows(3)
+                ->nullable(),
 
             Forms\Components\TextInput::make('price')
-                ->label('月額料金（円）')
+                ->label('金額（税込）')
                 ->numeric()
+                ->required()
+                ->suffix('円')
+                ->minValue(0),
+
+            Forms\Components\Select::make('interval')
+                ->label('課金間隔')
+                ->options([
+                    'month' => '月額',
+                    'year'  => '年額',
+                ])
                 ->required(),
 
-            Forms\Components\TextInput::make('stripe_price_id')
-                ->label('Stripe Price ID')
-                ->required()
-                ->helperText('例: price_xxxxxxxxxxxxxx'),
-
             Forms\Components\Toggle::make('is_active')
-                ->label('有効フラグ')
-                ->default(true),
+                ->label('公開状態')
+                ->default(true)
+                ->helperText('※ Stripe未連携のため、表示制御のみに使用されます'),
         ]);
     }
 
-    public static function table(Table $table): Table
+    /*
+    |--------------------------------------------------------------------------
+    | Table（一覧）
+    |--------------------------------------------------------------------------
+    */
+    public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->sortable(),
+
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('プラン名')
@@ -58,26 +77,43 @@ class PlanResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('price')
-                    ->label('料金(円)')
+                    ->label('金額')
+                    ->money('JPY')
                     ->sortable(),
 
-                Tables\Columns\BooleanColumn::make('is_active')
-                    ->label('有効'),
+                Tables\Columns\TextColumn::make('interval')
+                    ->label('課金間隔')
+                    ->formatStateUsing(fn ($state) =>
+                        $state === 'month' ? '月額' : '年額'
+                    ),
 
-                Tables\Columns\TextColumn::make('stripe_price_id')
-                    ->label('Stripe Price ID')
-                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('公開')
+                    ->boolean(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
                     ->label('作成日')
+                    ->date('Y/m/d')
                     ->sortable(),
+            ])
+            ->defaultSort('id', 'desc')
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('公開状態'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Pages
+    |--------------------------------------------------------------------------
+    */
     public static function getPages(): array
     {
         return [

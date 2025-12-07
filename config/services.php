@@ -7,10 +7,7 @@ return [
     | Third Party Services
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | Credentials for third-party integrations (Mailgun, SES, Stripe, etc.)
     |
     */
 
@@ -33,6 +30,21 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stripe
+    |--------------------------------------------------------------------------
+    |
+    | Stripe Secret Key & Webhook Secret
+    | STRIPE_WEBHOOK_SECRET は Stripe CLI または本番の Webhook 設定から取得。
+    |
+    */
+
+    'stripe' => [
+        'secret'         => env('STRIPE_SECRET'),          // ← あなたの STRIPE_SECRET
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),  // ← Webhook 署名シークレット
     ],
 
 ];

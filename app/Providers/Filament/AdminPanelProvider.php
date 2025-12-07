@@ -17,6 +17,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Spatie\Permission\Middlewares\RoleMiddleware;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,13 +28,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
-            ->profile() // ✅ logoutを含むユーザープロフィールページ
+            ->profile()
             ->pages([
                 Dashboard::class,
             ])
             ->colors([
-                'primary' => Color::Rose,
+                'primary' => Color::Blue,
             ])
+
+            // 🔥 Filament v3 はここで Middleware を追加
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -44,7 +47,11 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+
+                // 🔥 official のみパネルアクセス許可
+                RoleMiddleware::class . ':official',
             ])
+
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -4,12 +4,14 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PostResource\Pages;
 use App\Models\Post;
+use App\Models\PostImage;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Tables;
 use Filament\Resources\Resource;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Forms\Components\Repeater;
 
 class PostResource extends Resource
 {
@@ -25,9 +27,9 @@ class PostResource extends Resource
 
             Forms\Components\Select::make('user_id')
                 ->label('投稿者')
-                ->options(User::all()->pluck('name', 'id'))
-                ->required()
-                ->searchable(),
+                ->relationship('user', 'name')
+                ->searchable()
+                ->required(),
 
             Forms\Components\TextInput::make('title')
                 ->label('タイトル')
@@ -42,16 +44,25 @@ class PostResource extends Resource
                 ])
                 ->columnSpanFull(),
 
-            Forms\Components\FileUpload::make('image_path')
-                ->label('画像（任意）')
-                ->directory('posts')
-                ->image()
-                ->maxSize(10_000),
-
             Forms\Components\TextInput::make('video_url')
                 ->label('動画URL（任意）')
                 ->placeholder('例: https://youtu.be/xxxx')
-                ->url(),
+                ->url()
+                ->nullable(),
+
+            Repeater::make('images')
+                ->label('投稿画像')
+                ->relationship()
+                ->schema([
+                    Forms\Components\FileUpload::make('path')
+                        ->label('画像')
+                        ->image()
+                        ->directory('posts')
+                        ->maxSize(10_000),
+                ])
+                ->orderable('sort_order')
+                ->columns(1)
+                ->columnSpanFull(),
         ]);
     }
 
@@ -60,9 +71,10 @@ class PostResource extends Resource
         return $table
             ->columns([
 
-                Tables\Columns\ImageColumn::make('image_path')
+                Tables\Columns\ImageColumn::make('images.0.path')
                     ->label('画像')
-                    ->square(),
+                    ->square()
+                    ->defaultImageUrl('/default-post.png'),
 
                 Tables\Columns\TextColumn::make('title')
                     ->label('タイトル')

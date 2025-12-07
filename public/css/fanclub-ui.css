@@ -1,0 +1,320 @@
+/* 全体レイアウト */
+.fc-body {
+  margin: 0;
+  background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.fc-phone-frame {
+  max-width: 430px;
+  /* iPhone 14 相当 */
+  margin: 0 auto;
+  padding: 16px 0;
+}
+
+.fc-app {
+  background: #f5f5f5;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  height: 844px;
+  /* iPhone 14 高さ */
+  display: flex;
+  flex-direction: column;
+}
+
+.fc-safe-top {
+  height: 20px;
+}
+
+/* ヘッダー */
+.fc-header {
+  height: 56px;
+  padding: 0 16px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.fc-header-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.fc-header-icon {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+}
+
+/* メイン */
+.fc-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 8px;
+  box-sizing: border-box;
+}
+
+/* タブバー */
+.fc-tabbar {
+  height: 72px;
+  background: #e0e0e0;
+  display: flex;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+
+.fc-tab-item {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  color: #333;
+  font-size: 10px;
+  padding-top: 8px;
+}
+
+.fc-tab-icon {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.fc-tab-item.is-active .fc-tab-label {
+  font-weight: 700;
+}
+
+/* ホーム画面カード */
+.fc-section {
+  margin-bottom: 16px;
+}
+
+.fc-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.fc-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.fc-card-large {
+  min-height: 110px;
+}
+
+.fc-card-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  margin-right: 12px;
+}
+
+.fc-thumb-lightblue {
+  background: #cae9ff;
+}
+
+.fc-card-body {
+  flex: 1;
+}
+
+.fc-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.fc-card-text {
+  font-size: 13px;
+  margin: 0 0 2px;
+}
+
+.fc-card-meta {
+  font-size: 11px;
+  color: #777;
+  margin: 0;
+}
+
+.fc-card-chevron {
+  font-size: 20px;
+  color: #aaa;
+}
+
+/* トーク一覧 */
+.fc-search-bar {
+  background: #e5e5e5;
+  border-radius: 16px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fc-search-icon {
+  margin-right: 4px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.fc-search-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+}
+
+.fc-search-input:focus {
+  outline: none;
+}
+
+.fc-chat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fc-chat-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+
+.fc-chat-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  margin-right: 10px;
+}
+
+.fc-avatar-black {
+  background: #111;
+}
+
+.fc-avatar-green {
+  background: #2ecc71;
+}
+
+.fc-avatar-orange {
+  background: #f39c12;
+}
+
+.fc-avatar-yellow {
+  background: #f1c40f;
+}
+
+.fc-avatar-blue {
+  background: #3498db;
+}
+
+.fc-avatar-white {
+  background: #ffffff;
+  border: 1px solid #ddd;
+}
+
+.fc-chat-main {
+  flex: 1;
+}
+
+.fc-chat-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.fc-chat-name {
+  font-weight: 600;
+}
+
+.fc-chat-time {
+  color: #777;
+  font-size: 11px;
+}
+
+.fc-chat-preview {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+/* トーク画面 */
+.fc-talk-room {
+  position: relative;
+  height: 100%;
+  background: #cfe6ff;
+  border-radius: 20px;
+  padding: 16px 12px 72px;
+  box-sizing: border-box;
+}
+
+.fc-talk-room-date {
+  text-align: center;
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.fc-bubble {
+  max-width: 80%;
+  padding: 8px 10px;
+  background: #ffffff;
+  border-radius: 16px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.fc-bubble-left {
+  background: #f5fff0;
+  border: 1px solid #d6f2bf;
+}
+
+.fc-chat-input-area {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 20px;
+  padding: 6px 8px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.12);
+}
+
+.fc-chat-btn-icon,
+.fc-chat-btn-send {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.fc-chat-btn-send {
+  background: #ff4b4b;
+  color: #fff;
+  border-radius: 999px;
+  height: 32px;
+}
+
+.fc-chat-text {
+  border: none;
+  background: transparent;
+  flex: 1;
+  font-size: 13px;
+  padding: 0 6px;
+}
+
+.fc-chat-text:focus {
+  outline: none;
+}

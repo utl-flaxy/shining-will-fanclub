@@ -4,17 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
-            $table->string('name');                       // プラン名（例：通常会員）
-            $table->text('description')->nullable();      // 説明文
-            $table->unsignedInteger('price');             // 料金（円）
-            $table->string('interval')->default('month'); // 課金間隔（とりあえず month 固定想定）
-            $table->string('stripe_price_id');            // Stripe の price ID
-            $table->boolean('is_active')->default(true);  // 有効フラグ
+
+            $table->string('name');                // プラン名（例：Bety 月額会員）
+            $table->text('description')->nullable(); // 説明文
+            $table->integer('price');             // 税込み or 税抜き（Stripeと合わせる）
+            $table->string('interval')->default('month'); // month / year
+            $table->string('stripe_price_id');     // Stripeダッシュボードで発行される price_xxx
+
+            $table->boolean('is_active')->default(true); // 公開 / 非公開
             $table->timestamps();
         });
     }

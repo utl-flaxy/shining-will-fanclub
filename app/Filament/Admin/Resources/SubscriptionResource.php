@@ -20,74 +20,84 @@ class SubscriptionResource extends Resource
     protected static ?string $navigationGroup = 'サブスク管理';
     protected static ?string $navigationLabel = '会員サブスク';
 
+    /**
+     * ✅ フォーム（Stripe 無効）
+     */
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\Select::make('user_id')
                 ->label('ユーザー')
-                ->options(User::all()->pluck('name', 'id'))
+                ->options(User::query()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
 
             Forms\Components\Select::make('plan_id')
                 ->label('プラン')
-                ->options(Plan::all()->pluck('name', 'id'))
+                ->options(Plan::query()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
 
-            Forms\Components\TextInput::make('stripe_customer_id')
-                ->label('Stripe Customer ID')
-                ->required(),
-
-            Forms\Components\TextInput::make('stripe_subscription_id')
-                ->label('Stripe Subscription ID')
-                ->required(),
-
-            Forms\Components\TextInput::make('status')
+            Forms\Components\Select::make('status')
                 ->label('ステータス')
-                ->helperText('active / canceled / past_due など'),
+                ->options([
+                    'active'   => '有効',
+                    'canceled' => '解除',
+                    'paused'   => '一時停止',
+                ])
+                ->default('active')
+                ->required(),
 
             Forms\Components\DateTimePicker::make('current_period_end')
-                ->label('次回支払期限'),
-
-            Forms\Components\DateTimePicker::make('canceled_at')
-                ->label('解約日時'),
+                ->label('有効期限')
+                ->helperText('Stripe未使用時の手動管理用')
+                ->nullable(),
         ]);
     }
 
+    /**
+     * ✅ 一覧テーブル（Stripe 無効）
+     */
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            Tables\Columns\TextColumn::make('user.name')
-                ->label('ユーザー')
-                ->sortable()
-                ->searchable(),
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('ユーザー')
+                    ->sortable()
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('plan.name')
-                ->label('プラン')
-                ->sortable(),
+                Tables\Columns\TextColumn::make('plan.name')
+                    ->label('プラン')
+                    ->sortable(),
 
-            Tables\Columns\TextColumn::make('status')
-                ->label('状態')
-                ->badge()
-                ->color(fn ($state) => match ($state) {
-                    'active' => 'success',
-                    'past_due' => 'warning',
-                    'canceled' => 'danger',
-                    default => 'gray'
-                }),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('状態')
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'active'   => 'success',
+                        'paused'   => 'warning',
+                        'canceled' => 'danger',
+                        default    => 'gray',
+                    }),
 
-            Tables\Columns\TextColumn::make('current_period_end')
-                ->dateTime()
-                ->label('次回期限'),
+                Tables\Columns\TextColumn::make('current_period_end')
+                    ->label('有効期限')
+                    ->dateTime()
+                    ->placeholder('-'),
 
-            Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime()
-                ->label('更新日時'),
-        ])
-        ->actions([ Tables\Actions\EditAction::make() ]);
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('更新日時')
+                    ->dateTime(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ]);
     }
 
+    /**
+     * ✅ ページ定義
+     */
     public static function getPages(): array
     {
         return [

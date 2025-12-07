@@ -1,8 +1,9 @@
 version: "3.8"
 
-name: shining-will-fanclub # ← プロジェクト名を固定して干渉防止
+name: shining-will-fanclub
 
 services:
+
   app:
     build:
       context: .
@@ -12,27 +13,32 @@ services:
     volumes:
       - ./:/var/www/html
     ports:
-      - "8011:8000" # ← shining-will-shop(8000/8001)と被らない
+      - "8011:8000"
     depends_on:
-      - mysql
+      - fanclub-mysql
     environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_KEY: base64:dummykeyfordocker=
-      DB_CONNECTION: mysql
-      DB_HOST: fanclub-mysql
-      DB_PORT: 3306
-      DB_DATABASE: fanclub
-      DB_USERNAME: fanuser
-      DB_PASSWORD: fanpass
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=${APP_KEY}
+
+      - DB_CONNECTION=mysql
+      - DB_HOST=fanclub-mysql
+      - DB_PORT=3306
+      - DB_DATABASE=fanclub
+      - DB_USERNAME=root
+      - DB_PASSWORD=orachan0314
+
     command: >
       bash -c "
-        composer install &&
-        php artisan key:generate &&
+        if [ ! -f /var/www/html/vendor/autoload.php ]; then
+          composer install;
+        fi &&
+        php artisan config:clear &&
+        php artisan route:clear &&
         php artisan serve --host=0.0.0.0 --port=8000
       "
 
-  mysql:
+  fanclub-mysql:
     image: mysql:8.0
     container_name: fanclub-mysql
     restart: always
@@ -42,7 +48,7 @@ services:
       MYSQL_USER: fanuser
       MYSQL_PASSWORD: fanpass
     ports:
-      - "3311:3306" # ← shining-will-shop(3306/3307)と被らない
+      - "3311:3306"
     volumes:
       - fanclub_db_data:/var/lib/mysql
 

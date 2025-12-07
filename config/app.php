@@ -7,23 +7,21 @@ return [
     | Application Name
     |--------------------------------------------------------------------------
     */
-
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Shining-Will'),
 
     /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     */
-
     'env' => env('APP_ENV', 'production'),
 
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
+    | 本番では必ず false
     */
-
     'debug' => (bool) env('APP_DEBUG', false),
 
     /*
@@ -31,7 +29,6 @@ return [
     | Application URL
     |--------------------------------------------------------------------------
     */
-
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
@@ -39,7 +36,6 @@ return [
     | Application Timezone
     |--------------------------------------------------------------------------
     */
-
     'timezone' => 'Asia/Tokyo',
 
     /*
@@ -47,7 +43,6 @@ return [
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     */
-
     'locale' => env('APP_LOCALE', 'ja'),
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
     'faker_locale' => env('APP_FAKER_LOCALE', 'ja_JP'),
@@ -57,35 +52,28 @@ return [
     | Encryption Key
     |--------------------------------------------------------------------------
     */
-
     'cipher' => 'AES-256-CBC',
     'key' => env('APP_KEY'),
-    'previous_keys' => [
-        ...array_filter(
-            explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
-        ),
-    ],
+
+    'previous_keys' => array_filter(
+        explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
+    ),
 
     /*
     |--------------------------------------------------------------------------
-    | Maintenance Mode Driver
+    | Maintenance Mode
     |--------------------------------------------------------------------------
     */
-
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
-        'store' => env('APP_MAINTENANCE_STORE', 'database'),
+        'store'  => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
     |--------------------------------------------------------------------------
-    | ここにアプリケーションで使うサービスプロバイダを登録します。
-    | Filament の管理画面を有効にするために AdminPanelProvider を追加。
-    |--------------------------------------------------------------------------
     */
-
     'providers' => [
 
         /*
@@ -93,7 +81,6 @@ return [
         | Laravel Framework Service Providers
         |--------------------------------------------------------------------------
         */
-
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
@@ -113,22 +100,40 @@ return [
         Illuminate\Redis\RedisServiceProvider::class,
         Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
         Illuminate\Session\SessionServiceProvider::class,
-        Illuminate\Translation\TranslationServiceProvider::class, // ★ これを追加！
+        Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Package Service Providers
+        |--------------------------------------------------------------------------
+        */
+
+        // ✅ Filament v3 Core（絶対に無効化しない）
+        Filament\Support\SupportServiceProvider::class,
+        Filament\FilamentServiceProvider::class,
+
+        // Livewire（Filament依存）
+        Livewire\LivewireServiceProvider::class,
+
+        // Spatie Permission
+        Spatie\Permission\PermissionServiceProvider::class,
 
         /*
         |--------------------------------------------------------------------------
         | Application Service Providers
         |--------------------------------------------------------------------------
         */
-
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+
+        // ⭐ ルーティング
         App\Providers\RouteServiceProvider::class,
 
-        // ✅ Filament 管理パネルを登録
+        // ✅ Filament 管理画面
         App\Providers\Filament\AdminPanelProvider::class,
     ],
+
 ];
