@@ -3,103 +3,61 @@
 namespace App\Http\Controllers\Members;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Item;
 
 class CartController extends Controller
 {
-    // カート一覧
     public function index()
     {
-        $cart = session()->get('cart', []);
+        $cart = session('cart', []);
+        $items = [];
+        $total = 0;
 
-        $totalPrice = 0;
-        $totalCount = 0;
+        foreach ($cart as $itemId => $cartItem) {
+            $item = Item::find($itemId);
+            if (!$item) continue;
 
-        foreach ($cart as $row) {
-            $qty = $row['quantity'] ?? 1;
-            $totalPrice += $row['price'] * $qty;
-            $totalCount += $qty;
-        }
+            $subtotal = $cartItem['price'] * $cartItem['quantity'];
 
-        return view('members.cart.index', compact('cart', 'totalPrice', 'totalCount'));
-    }
-
-    // カートに追加
-    public function add(Request $request, $id)
-    {
-        $item = Item::findOrFail($id);
-
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] = ($cart[$id]['quantity'] ?? 1) + 1;
-        } else {
-            $cart[$id] = [
-                'id'         => $item->id,
-                'name'       => $item->name ?? $item->title,
-                'price'      => $item->price,
-                'image_path' => $item->image_path,
-                'quantity'   => 1,
+            $items[] = [
+                'id'       => $item->id,
+                'name'     => $item->title,
+                'price'    => $cartItem['price'],
+                'quantity' => $cartItem['quantity'],
+                'image'    => $item->image_path
+                    ? asset('storage/'.$item->image_path)
+                    : asset('images/noimage.png'),
+                'subtotal' => $subtotal,
             ];
+
+            $total += $subtotal;
         }
 
-        session()->put('cart', $cart);
-
-        return redirect()
-            ->route('members.cart.index')
-            ->with('success', 'カートに追加しました');
+        return view('members.cart.index', compact('items','total'));
     }
 
-    // 数量を +1
-    public function increase($id)
+    public function add(Item $item)
     {
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] = ($cart[$id]['quantity'] ?? 1) + 1;
-            session()->put('cart', $cart);
+        // 🔒 販売中のみ許可
+        if (!$item->isOnSale()) {
+            return back()->withErrors('現在この商品は購入できません');
         }
 
-        return redirect()
-            ->route('members.cart.index')
-            ->with('success', '数量を変更しました');
+        $cart = session('cart', []);
+
+        $cart[$item->id]['quantity'] = ($cart[$item->id]['quantity'] ?? 0) + 1;
+        $cart[$item->id]['price'] = $item->price;
+
+        session(['cart' => $cart]);
+
+        return redirect()->route('members.cart.index');
     }
 
-    // 数量を -1（0になったら削除）
-    public function decrease($id)
+    public function remove(Item $item)
     {
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$id])) {
-            $current = $cart[$id]['quantity'] ?? 1;
-
-            if ($current <= 1) {
-                unset($cart[$id]);
-            } else {
-                $cart[$id]['quantity'] = $current - 1;
-            }
-
-            session()->put('cart', $cart);
-        }
-
-        return redirect()
-            ->route('members.cart.index')
-            ->with('success', '数量を変更しました');
-    }
-
-    // カートから削除
-    public function remove($id)
-    {
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-            session()->put('cart', $cart);
-        }
-
-        return redirect()
-            ->route('members.cart.index')
-            ->with('success', 'カートから削除しました');
+        $cart = session('cart', []);
+        unset($cart[$item->id]);
+        session(['cart' => $cart]);
+        return back();
     }
 }

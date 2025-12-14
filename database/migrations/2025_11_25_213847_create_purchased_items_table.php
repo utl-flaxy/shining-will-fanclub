@@ -11,14 +11,20 @@ return new class extends Migration
         Schema::create('purchased_items', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('item_id');
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-            $table->timestamp('purchased_at')->nullable();
+            $table->foreignId('item_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->timestamp('purchased_at')->useCurrent();
+
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('item_id')->references('id')->on('items')->cascadeOnDelete();
+            // 同一ユーザーが同一アイテムを複数回買える設計
+            // （制限したい場合は unique を追加）
         });
     }
 

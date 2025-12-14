@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Members;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Item;
 use App\Models\PurchasedItem;
 
 class ItemsController extends Controller
@@ -13,26 +14,37 @@ class ItemsController extends Controller
      */
     public function index()
     {
-        $items = \App\Models\Item::with('talent')->get();
+        $items = Item::with('talent')
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('publish_start_at')
+                  ->orWhere('publish_start_at', '<=', now());
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
         return view('members.items.index', compact('items'));
     }
 
     /**
      * 商品詳細
      */
-    public function show(\App\Models\Item $item)
+    public function show(Item $item)
     {
+        if (!$item->isPublished()) {
+            abort(404);
+        }
+
         return view('members.items.show', compact('item'));
     }
 
     /**
-     * ✅ マイアイテム（購入済み一覧）
+     * マイアイテム（購入済み）
      */
     public function owned()
     {
         $user = Auth::user();
 
-        // ✅ Blade 側と変数名を合わせる
         $items = PurchasedItem::with('item.talent')
             ->where('user_id', $user->id)
             ->orderByDesc('purchased_at')

@@ -1,8 +1,8 @@
 @extends('members.layouts.app')
 
-@section('content')
+@section('header', '購入履歴')
 
-<x-members.header title="購入履歴" back="members.settings.index" />
+@section('content')
 
 <style>
 .purchase-wrapper {
@@ -11,32 +11,25 @@
     padding: 0 16px 90px;
 }
 
-/* ===== カード ===== */
 .purchase-card {
-    background: #fff;
-    border-radius: 16px;
+    display: flex;
+    gap: 14px;
     padding: 14px;
     margin-bottom: 12px;
+    background: #fff;
+    border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.purchase-inner {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-/* 画像 */
 .purchase-image {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 12px;
     object-fit: cover;
-    background: #f1f1f5;
+    background: #f2f2f6;
     flex-shrink: 0;
 }
 
-/* 中央情報 */
 .purchase-info {
     flex: 1;
     min-width: 0;
@@ -45,89 +38,80 @@
 .purchase-title {
     font-size: 15px;
     font-weight: 700;
-    color: #111;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .purchase-meta {
-    margin-top: 4px;
     font-size: 12px;
     color: #777;
-}
-
-/* 右側 */
-.purchase-right {
-    text-align: right;
-    flex-shrink: 0;
+    margin-top: 4px;
 }
 
 .purchase-price {
-    font-size: 14px;
-    font-weight: 700;
+    margin-top: 6px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-.purchase-date {
-    font-size: 11px;
-    color: #999;
-    margin-top: 4px;
-    white-space: nowrap;
+.purchase-price.free {
+    color: #0a7d44;
 }
 
-/* 空表示 */
-.empty-text {
+.purchase-price.paid {
+    color: #111;
+}
+
+/* 空状態 */
+.empty-box {
     text-align: center;
+    margin-top: 60px;
     color: #888;
     font-size: 14px;
-    margin-top: 48px;
 }
 </style>
 
 <div class="purchase-wrapper">
 
     @forelse($purchasedItems as $p)
-        @php $item = $p->item; @endphp
+        @php
+            $item  = $p->item;
+            $price = $p->price ?? 0;
+        @endphp
 
         <div class="purchase-card">
-            <div class="purchase-inner">
 
-                {{-- 商品画像 --}}
-                <img
-                    src="{{ $item->image_path ? asset('storage/' . $item->image_path) : asset('images/noimage.png') }}"
-                    alt="{{ $item->title }}"
-                    class="purchase-image"
-                >
+            <img
+                src="{{ $item->image_path
+                        ? asset('storage/'.$item->image_path)
+                        : asset('images/noimage.png') }}"
+                class="purchase-image"
+                alt="{{ $item->title }}"
+            >
 
-                {{-- 商品名 --}}
-                <div class="purchase-info">
-                    <div class="purchase-title">{{ $item->title }}</div>
-                    <div class="purchase-meta">
-                        購入済みアイテム
-                    </div>
+            <div class="purchase-info">
+                <div class="purchase-title">
+                    {{ $item->title }}
                 </div>
 
-                {{-- 価格・日付 --}}
-                <div class="purchase-right">
-                    <div class="purchase-price">
-                        ¥{{ number_format($item->price) }}
-                    </div>
-                    <div class="purchase-date">
-                        {{ optional($p->purchased_at)->format('Y年n月j日') }}
-                    </div>
+                <div class="purchase-meta">
+                    {{ optional($p->purchased_at)->format('Y年n月j日') }} に購入
                 </div>
 
+                <div class="purchase-price {{ $price == 0 ? 'free' : 'paid' }}">
+                    {{ $price == 0 ? '0円（特典）' : number_format($price).'円' }}
+                </div>
             </div>
+
         </div>
 
     @empty
-        <div class="empty-text">
-            購入履歴はありません
+        <div class="empty-box">
+            購入履歴はまだありません
         </div>
     @endforelse
 
 </div>
-
-@include('components.members.nav')
 
 @endsection

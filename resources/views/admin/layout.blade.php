@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shining-Will Admin</title>
 
-    {{-- Tailwind/独自CSS --}}
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     <style>
@@ -57,7 +56,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: url('https://randomuser.me/api/portraits/men/15.jpg') center/cover no-repeat;
+            background: #ccc;
         }
         .content {
             margin-left: 240px;
@@ -68,28 +67,55 @@
 
 <body>
 
-    {{-- Sidebar --}}
-    <aside class="sidebar">
-        <h2>Shining-Will Admin</h2>
+{{-- Sidebar --}}
+<aside class="sidebar">
+    <h2>Shining-Will Admin</h2>
 
-        <a href="{{ route('admin.home') }}" class="{{ request()->routeIs('admin.home') ? 'active' : '' }}">ホーム</a>
-        <a href="#">ファン一覧</a>
-        <a href="#">投稿一覧</a>
-        <a href="#">トーク管理</a>
-        <a href="#">アイテムショップ管理</a>
-        <a href="#">Watchdog管理</a>
-        <a href="#">設定</a>
-    </aside>
+    <a href="{{ route('admin.home') }}"
+       class="{{ request()->routeIs('admin.home') ? 'active' : '' }}">
+        ホーム
+    </a>
 
-    {{-- Header --}}
-    <header class="header">
-        <div class="profile"></div>
-    </header>
+    <a href="{{ route('admin.fans.index') ?? '#' }}">
+        ファン一覧
+    </a>
 
-    {{-- Main Content --}}
-    <main class="content">
-        @yield('content')
-    </main>
+    <a href="{{ route('admin.posts.index') ?? '#' }}">
+        投稿一覧
+    </a>
+
+    <a href="{{ route('admin.talks.index') ?? '#' }}">
+        トーク管理
+    </a>
+
+    <a href="{{ route('admin.items.index') ?? '#' }}">
+        アイテムショップ管理
+    </a>
+
+    {{-- ★ QRスキャン（追加） --}}
+    <a href="{{ route('admin.qr.scan') }}"
+       class="{{ request()->routeIs('admin.qr.*') ? 'active' : '' }}">
+        QRスキャン
+    </a>
+
+    <a href="{{ route('admin.watchdog.index') ?? '#' }}">
+        Watchdog管理
+    </a>
+
+    <a href="{{ route('admin.settings.index') ?? '#' }}">
+        設定
+    </a>
+</aside>
+
+{{-- Header --}}
+<header class="header">
+    <div class="profile"></div>
+</header>
+
+{{-- Main --}}
+<main class="content">
+    @yield('content')
+</main>
 
 </body>
 </html>

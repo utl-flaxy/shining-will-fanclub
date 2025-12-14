@@ -2,167 +2,136 @@
 
 @section('content')
 
-<style>
-.item-wrapper {
-    max-width: 480px;
-    margin: 0 auto;
-    padding-bottom: 90px;
-    background: #fff;
-}
+@php
+    $saleStatus = $item->isOnSale()
+        ? 'sale'
+        : ($item->isSaleEnded() ? 'end' : 'wait');
+@endphp
 
-/* ===== ヘッダー ===== */
-.item-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-bottom: 1px solid #eee;
-}
+<div style="background:#f6f7fb; padding-bottom:160px;">
 
-.item-back {
-    font-size: 20px;
-    text-decoration: none;
-    color: #111;
-}
-
-.item-title {
-    font-weight: 700;
-    font-size: 16px;
-}
-
-/* ===== 画像 ===== */
-.item-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #f5f5f5;
-}
-
-.item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* ===== 本文 ===== */
-.item-body {
-    padding: 16px;
-}
-
-.item-name {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.item-price {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.item-status {
-    display: inline-block;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    margin-bottom: 14px;
-}
-
-.status-owned {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.status-new {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-
-.item-desc {
-    font-size: 13px;
-    color: #555;
-    line-height: 1.6;
-    margin-bottom: 24px;
-}
-
-/* ===== ボタン ===== */
-.item-actions {
-    padding: 0 16px;
-}
-
-.buy-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 999px;
-    border: none;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.buy-btn.primary {
-    background: #111;
-    color: #fff;
-}
-
-.buy-btn.disabled {
-    background: #ccc;
-    color: #777;
-    cursor: not-allowed;
-}
-</style>
-
-<div class="item-wrapper">
-
-    {{-- ヘッダー --}}
-    <div class="item-header">
-        <a href="{{ route('members.items.index') }}" class="item-back">‹</a>
-        <div class="item-title">ショップ</div>
+    {{-- 戻る --}}
+    <div style="padding:14px 16px; background:#fff; border-bottom:1px solid #eee;">
+        <a href="{{ route('members.items.index') }}" style="text-decoration:none; color:#555;">
+            ‹ ショップ
+        </a>
     </div>
 
-    {{-- 商品画像 --}}
-    <div class="item-image">
-        <img src="{{ asset('storage/' . $item->image_path) }}" alt="{{ $item->name }}">
+    {{-- 商品画像（見切れない） --}}
+    <div style="
+        background:#fff;
+        padding:16px;
+    ">
+        <div style="
+            width:100%;
+            aspect-ratio:1/1;
+            background:#f1f1f1;
+            border-radius:16px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+        ">
+            <img
+                src="{{ $item->image_path
+                    ? asset('storage/'.$item->image_path)
+                    : asset('images/noimage.png') }}"
+                alt="{{ $item->title }}"
+                style="
+                    max-width:100%;
+                    max-height:100%;
+                    object-fit:contain;
+                "
+            >
+        </div>
     </div>
 
     {{-- 商品情報 --}}
-    <div class="item-body">
-        <div class="item-name">{{ $item->name }}</div>
+    <div style="
+        margin:16px;
+        padding:16px;
+        background:#fff;
+        border-radius:16px;
+    ">
+        <div style="font-size:18px; font-weight:700;">
+            {{ $item->title }}
+        </div>
 
-        <div class="item-price">
+        <div style="font-size:16px; margin-top:4px;">
             {{ number_format($item->price) }}円
         </div>
 
-        @if($owned ?? false)
-            <div class="item-status status-owned">
-                購入済み
-            </div>
-        @else
-            <div class="item-status status-new">
-                販売中
-            </div>
-        @endif
-
-        <div class="item-desc">
-            {{ $item->description ?? 'この商品はデジタルアイテムです。購入後すぐに使用できます。' }}
+        {{-- ステータス --}}
+        <div style="margin-top:6px;">
+            @if($saleStatus === 'sale')
+                <span style="font-size:11px; color:#2e7d32;">販売中</span>
+            @elseif($saleStatus === 'end')
+                <span style="font-size:11px; color:#666;">販売終了</span>
+            @else
+                <span style="font-size:11px; color:#ef6c00;">
+                    {{ optional($item->sale_start_at)->format('m/d H:i') }}〜 販売開始
+                </span>
+            @endif
         </div>
-    </div>
 
-    {{-- 操作ボタン --}}
-    <div class="item-actions">
-        @if($owned ?? false)
-            <button class="buy-btn disabled">購入済み</button>
-        @else
-            <form method="POST" action="{{ route('members.cart.add', $item->id) }}">
-                @csrf
-                <button class="buy-btn primary">カートに入れる</button>
-            </form>
-        @endif
+        {{-- 説明 --}}
+        <p style="
+            margin-top:14px;
+            font-size:13px;
+            line-height:1.7;
+            color:#555;
+        ">
+            {{ $item->description ?? 'この商品はデジタルアイテムです。' }}
+        </p>
     </div>
 
 </div>
 
-{{-- 下部ナビ --}}
-@include('components.members.nav')
+{{-- 下固定購入エリア --}}
+<div style="
+    position:fixed;
+    bottom:72px;
+    left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    padding:14px 16px;
+    border-top:1px solid #e6e6ea;
+    z-index:50;
+">
+
+    @if($saleStatus === 'sale')
+        <form method="POST" action="{{ route('members.cart.add', $item) }}">
+            @csrf
+            <button style="
+                width:100%;
+                padding:16px;
+                border-radius:999px;
+                background:#111;
+                color:#fff;
+                font-size:15px;
+                font-weight:700;
+                border:none;
+            ">
+                カートに入れる
+            </button>
+        </form>
+    @else
+        <button disabled style="
+            width:100%;
+            padding:16px;
+            border-radius:999px;
+            background:#ccc;
+            color:#666;
+            font-size:15px;
+            font-weight:700;
+            border:none;
+        ">
+            {{ $saleStatus === 'end' ? '販売終了' : '販売開始前' }}
+        </button>
+    @endif
+
+</div>
 
 @endsection

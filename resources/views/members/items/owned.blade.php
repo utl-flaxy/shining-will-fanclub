@@ -1,107 +1,165 @@
 @extends('members.layouts.app')
 
+@section('title', 'マイアイテム')
+@section('header', 'マイアイテム')
+
 @section('content')
 
-<x-members.header title="マイアイテム" back="members.home" />
-
 <style>
-.myitem-wrapper {
+/* ===============================
+   レイアウト
+=============================== */
+.my-items-wrapper {
     max-width: 480px;
     margin: 0 auto;
-    padding: 0 16px 90px;
+    padding: 20px 16px 120px;
 }
 
-.myitem-card {
+/* ===============================
+   空状態
+=============================== */
+.empty-state {
+    text-align: center;
+    margin-top: 80px;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-text {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.empty-btn {
+    display: inline-block;
+    padding: 14px 28px;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ===============================
+   アイテムカード
+=============================== */
+.my-item-card {
     display: flex;
     gap: 14px;
     padding: 14px;
-    margin-bottom: 12px;
     background: #fff;
     border-radius: 16px;
+    margin-bottom: 14px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.myitem-image {
-    width: 64px;
-    height: 64px;
+.my-item-image {
+    width: 72px;
+    height: 72px;
     border-radius: 12px;
     object-fit: cover;
     background: #f2f2f6;
-    flex-shrink: 0;
 }
 
-.myitem-info {
+.my-item-info {
     flex: 1;
-    min-width: 0;
 }
 
-.myitem-title {
-    font-size: 15px;
+.my-item-name {
+    font-size: 14px;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-bottom: 4px;
 }
 
-.myitem-date {
+.my-item-meta {
     font-size: 12px;
-    color: #777;
-    margin-top: 4px;
+    color: #666;
+    margin-bottom: 6px;
 }
 
-.myitem-badge {
-    display: inline-block;
+.my-item-date {
     font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: #eef1ff;
-    color: #4455dd;
-    margin-top: 6px;
+    color: #999;
 }
 
-/* 空 */
-.empty-box {
-    text-align: center;
-    margin-top: 60px;
-    color: #888;
+/* 使用ボタン（将来拡張用） */
+.use-btn {
+    margin-top: 8px;
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 11px;
+    text-decoration: none;
 }
 </style>
 
-<div class="myitem-wrapper">
+<div class="my-items-wrapper">
 
-    @forelse($items as $p)
-        @php $item = $p->item; @endphp
+    {{-- ===============================
+         空状態
+    =============================== --}}
+    @if($items->isEmpty())
+        <div class="empty-state">
+            <div class="empty-icon">🎁</div>
 
-        <div class="myitem-card">
-
-            <img
-                src="{{ $item->image_path ? asset('storage/'.$item->image_path) : asset('images/noimage.png') }}"
-                class="myitem-image"
-                alt="{{ $item->title }}"
-            >
-
-            <div class="myitem-info">
-                <div class="myitem-title">{{ $item->title }}</div>
-                <div class="myitem-date">
-                    {{ optional($p->purchased_at)->format('Y年n月j日') }} に取得
-                </div>
-
-                <span class="myitem-badge">
-                    ✔ 所持中
-                </span>
+            <div class="empty-text">
+                まだマイアイテムがありません。<br>
+                ショップからアイテムを購入してみましょう。
             </div>
 
+            <a href="{{ route('members.items.index') }}" class="empty-btn">
+                ショップへ行く
+            </a>
         </div>
+    @else
 
-    @empty
-        <div class="empty-box">
-            まだマイアイテムがありません<br>
-            ショップからアイテムを購入してみましょう
-        </div>
-    @endforelse
+    {{-- ===============================
+         アイテム一覧
+    =============================== --}}
+        @foreach($items as $purchased)
+            @php
+                $item = $purchased->item;
+            @endphp
+
+            <div class="my-item-card">
+                <img
+                    class="my-item-image"
+                    src="{{ $item->image_path
+                        ? asset('storage/' . $item->image_path)
+                        : asset('images/noimage.png') }}"
+                    alt="{{ $item->title }}"
+                >
+
+                <div class="my-item-info">
+                    <div class="my-item-name">
+                        {{ $item->title }}
+                    </div>
+
+                    <div class="my-item-meta">
+                        {{ $item->talent->name ?? 'Bety' }}
+                    </div>
+
+                    <div class="my-item-date">
+                        購入日：
+                        {{ \Carbon\Carbon::parse($purchased->purchased_at)->format('Y/m/d') }}
+                    </div>
+
+                    {{-- 将来拡張 --}}
+                    {{-- <a href="#" class="use-btn">使用する</a> --}}
+                </div>
+            </div>
+        @endforeach
+
+    @endif
 
 </div>
-
-@include('components.members.nav')
 
 @endsection

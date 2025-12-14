@@ -1,27 +1,30 @@
 @extends('members.layouts.app')
 
+@section('title', '購入完了')
+
+@section('hide-bottom-nav')
+@endsection
+
 @section('content')
 
 <style>
 .thanks-wrapper {
     max-width: 480px;
     margin: 0 auto;
-    padding: 60px 16px 100px;
+    padding: 60px 16px 120px;
     text-align: center;
 }
 .thanks-title {
     font-size: 22px;
-    font-weight: 700;
+    font-weight: 900;
     margin-bottom: 12px;
 }
 .thanks-text {
     font-size: 14px;
     color: #555;
     margin-bottom: 28px;
-    line-height: 1.6;
+    line-height: 1.7;
 }
-
-/* ボタン */
 .thanks-btn {
     display: block;
     width: 100%;
@@ -30,6 +33,7 @@
     padding: 14px 0;
     border-radius: 14px;
     font-size: 15px;
+    font-weight: 800;
     text-decoration: none;
 }
 .btn-main {
@@ -53,7 +57,7 @@
         「マイアイテム」から確認できます。
     </div>
 
-    <a href="{{ route('members.items.owned') }}" class="thanks-btn btn-main">
+    <a href="{{ route('members.items.my') }}" class="thanks-btn btn-main">
         マイアイテムを見る
     </a>
 

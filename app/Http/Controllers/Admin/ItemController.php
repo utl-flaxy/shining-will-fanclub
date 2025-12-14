@@ -9,86 +9,114 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
-    /**
-     * アイテム一覧
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $items = Item::with('talent')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Item::query()->with('talent');
+
+        // 🔍 キーワード（商品名）
+        if ($request->filled('keyword')) {
+            $query->where('title', 'like', '%' . $request->keyword . '%');
+        }
+
+        // 🧩 タイプ（normal / stamp / theme）
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // 👁 公開状態（1=公開 / 0=非公開）
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->is_active === '1');
+        }
+
+        // 🟢 販売状態（on_sale / before / ended）
+        if ($request->filled('sale_status')) {
+            $now = now();
+
+            if ($request->sale_status === 'on_sale') {
+                // 販売中：開始<=now かつ (終了がnull または now<終了)
+                $query->where(function ($q) use ($now) {
+                    $q->whereNull('sale_start_at')
+                      ->orWhere('sale_start_at', '<=', $now);
+                })->where(function ($q) use ($now) {
+                    $q->whereNull('sale_end_at')
+                      ->orWhere('sale_end_at', '>', $now);
+                });
+
+            } elseif ($request->sale_status === 'before') {
+                // 販売前：開始が未来
+                $query->whereNotNull('sale_start_at')
+                      ->where('sale_start_at', '>', $now);
+
+            } elseif ($request->sale_status === 'ended') {
+                // 販売終了：終了が過去
+                $query->whereNotNull('sale_end_at')
+                      ->where('sale_end_at', '<', $now);
+            }
+        }
+
+        $items = $query->latest()->get();
 
         return view('admin.items.index', compact('items'));
     }
 
-    /**
-     * 新規作成画面
-     */
     public function create()
     {
         $talents = Talent::orderBy('id')->get();
-
         return view('admin.items.create', compact('talents'));
     }
 
-    /**
-     * 保存処理
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'price'       => 'required|integer|min:0',
-            'talent_id'   => 'nullable|integer|exists:talents,id',
-            'description' => 'nullable|string|max:2000',
-            'status'      => 'required|in:public,private',
-            'thumbnail'   => 'nullable|image|max:5120',
+            'title'            => 'required|string|max:255',
+            'type'             => 'required|in:normal,stamp,theme',
+            'price'            => 'required|integer|min:0',
+            'talent_id'        => 'nullable|exists:talents,id',
+            'status'           => 'required|in:public,private',
+            'thumbnail'        => 'nullable|image|max:5120',
+            'publish_start_at' => 'nullable|date',
+            'sale_start_at'    => 'nullable|date',
+            'sale_end_at'      => 'nullable|date|after_or_equal:sale_start_at',
         ]);
 
-        $path = null;
-        if ($request->hasFile('thumbnail')) {
-            $path = $request->thumbnail->store('items', 'public');
-        }
+        $path = $request->hasFile('thumbnail')
+            ? $request->thumbnail->store('items', 'public')
+            : null;
 
         Item::create([
-            'title'       => $validated['title'],
-            'price'       => $validated['price'],
-            'talent_id'   => $validated['talent_id'] ?? null,
-            'type'        => 'normal',
-            'description' => $validated['description'] ?? null,
-            'image_path'  => $path,
-            'is_active'   => $validated['status'] === 'public',
+            'title'            => $validated['title'],
+            'type'             => $validated['type'],
+            'price'            => $validated['price'],
+            'talent_id'        => $validated['talent_id'] ?? null,
+            'image_path'       => $path,
+            'is_active'        => $validated['status'] === 'public',
+            'publish_start_at' => $validated['publish_start_at'] ?? null,
+            'sale_start_at'    => $validated['sale_start_at'] ?? null,
+            'sale_end_at'      => $validated['sale_end_at'] ?? null,
         ]);
 
-        return redirect()
-            ->route('admin.items.index')
+        return redirect()->route('admin.items.index')
             ->with('success', 'アイテムを追加しました');
     }
 
-
-    /**
-     * 編集画面
-     */
     public function edit(Item $item)
     {
         $talents = Talent::orderBy('id')->get();
-
         return view('admin.items.edit', compact('item', 'talents'));
     }
 
-    /**
-     * 更新処理
-     */
     public function update(Request $request, Item $item)
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'talent_id'   => 'nullable|exists:talents,id',
-            'price'       => 'required|integer|min:0',
-            'type'        => 'nullable|string|max:50',
-            'description' => 'nullable|string|max:2000',
-            'status'      => 'required|in:public,private',
-            'thumbnail'   => 'nullable|image|max:5120',
+            'title'            => 'required|string|max:255',
+            'type'             => 'required|in:normal,stamp,theme',
+            'price'            => 'required|integer|min:0',
+            'talent_id'        => 'nullable|exists:talents,id',
+            'status'           => 'required|in:public,private',
+            'thumbnail'        => 'nullable|image|max:5120',
+            'publish_start_at' => 'nullable|date',
+            'sale_start_at'    => 'nullable|date',
+            'sale_end_at'      => 'nullable|date|after_or_equal:sale_start_at',
         ]);
 
         $path = $item->image_path;
@@ -97,29 +125,27 @@ class ItemController extends Controller
         }
 
         $item->update([
-            'title'       => $validated['title'],
-            'talent_id'   => $validated['talent_id'] ?? null,
-            'price'       => $validated['price'],
-            'type'        => $validated['type'] ?? 'normal',
-            'description' => $validated['description'] ?? null,
-            'image_path'  => $path,
-            'is_active'   => $validated['status'] === 'public',
+            'title'            => $validated['title'],
+            'type'             => $validated['type'],
+            'price'            => $validated['price'],
+            'talent_id'        => $validated['talent_id'] ?? null,
+            'image_path'       => $path,
+            'is_active'        => $validated['status'] === 'public',
+            'publish_start_at' => $validated['publish_start_at'] ?? null,
+            'sale_start_at'    => $validated['sale_start_at'] ?? null,
+            'sale_end_at'      => $validated['sale_end_at'] ?? null,
         ]);
 
-        return redirect()
-            ->route('admin.items.index')
+        return redirect()->route('admin.items.index')
             ->with('success', 'アイテムを更新しました');
     }
 
-    /**
-     * 削除
-     */
     public function destroy(Item $item)
     {
         $item->delete();
 
         return redirect()
-            ->route('admin.items.index')
+            ->route('admin.items.index', request()->query()) // ✅ フィルター維持
             ->with('success', '削除しました');
     }
 }

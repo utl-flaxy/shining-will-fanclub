@@ -47,7 +47,7 @@ Route::middleware(['auth', 'role:talent'])
 
             Route::get('/', [PostController::class, 'index'])->name('index');
             Route::get('/create', [PostController::class, 'create'])->name('create');
-            Route::post('/store', [PostController::class, 'store'])->name('store');
+            Route::post('/', [PostController::class, 'store'])->name('store');
 
             Route::get('/{post}', [PostController::class, 'show'])->name('show');
             Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');

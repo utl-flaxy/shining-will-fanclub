@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,5 +23,17 @@ class AppServiceProvider extends ServiceProvider
     {
         // ページネーションを Tailwind に統一
         Paginator::useTailwind();
+
+        // カート数量を全ページで共有
+        View::composer('members.layouts.app', function ($view) {
+            $cart = session('cart', []);
+            $count = 0;
+
+            foreach ($cart as $item) {
+                $count += $item['quantity'] ?? 0;
+            }
+
+            $view->with('cartCount', $count);
+        });
     }
 }

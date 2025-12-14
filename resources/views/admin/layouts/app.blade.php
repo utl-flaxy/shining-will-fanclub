@@ -1,58 +1,44 @@
-{{-- resources/views/admin/layouts/app.blade.php --}}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Shining-Will Admin')</title>
+    <title>@yield('title', '管理者ダッシュボード')</title>
 
-    {{-- Material Icons --}}
+    {{-- Google Icons --}}
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    {{-- Vite --}}
-    @vite([
-        'resources/css/admin.css',
-        'resources/js/app.js',
-    ])
-
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Noto Sans JP', sans-serif;
-            background: #F9FAFB;
-        }
-
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .content {
-            flex: 1;
-            padding: 32px;
-        }
-    </style>
+    {{-- Admin CSS --}}
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 </head>
+
 <body>
 
-<div class="layout">
+<div class="admin-layout" style="display:flex; min-height:100vh;">
 
-    {{-- 左メニュー --}}
+    {{-- ✅ サイドバー（ここが超重要） --}}
     @include('admin.partials.sidebar')
 
-    <div class="content-wrapper">
+    {{-- ✅ メインエリア --}}
+    <div class="content-area">
 
-        {{-- 上バー --}}
-        @include('admin.partials.topbar')
+        {{-- トップバー --}}
+        <header class="admin-topbar">
+            <div class="admin-topbar__title">
+                @yield('page_title', '管理者ダッシュボード')
+            </div>
 
-        {{-- メイン --}}
-        <main class="content">
+            <div class="admin-topbar__right">
+                <button class="topbar-icon-btn">
+                    <span class="material-icons">notifications</span>
+                </button>
+                <button class="topbar-icon-btn">
+                    <span class="material-icons">account_circle</span>
+                </button>
+            </div>
+        </header>
+
+        {{-- メインコンテンツ --}}
+        <main class="main-content">
             @yield('content')
         </main>
 

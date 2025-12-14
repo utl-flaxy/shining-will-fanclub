@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 use App\Models\Post;
 use App\Models\PostImage;
@@ -15,7 +14,7 @@ use App\Models\PostComment;
 class PostController extends Controller
 {
     /**
-     * 投稿一覧
+     * 投稿一覧（タレント）
      */
     public function index()
     {
@@ -40,7 +39,7 @@ class PostController extends Controller
     }
 
     /**
-     * 新規投稿作成フォーム
+     * 新規投稿フォーム
      */
     public function create()
     {
@@ -48,15 +47,15 @@ class PostController extends Controller
     }
 
     /**
-     * 新規投稿保存（★超安定版）
+     * ✅ 新規投稿保存（画像複数・完全対応・安定版）
      */
     public function store(Request $request)
     {
-        // ✅ image バリデーションは使わない
+        // ✅ array validation を使わない（超重要）
         $validated = $request->validate([
-            'body'     => 'required|string',
-            'images'   => 'nullable|array|max:4',
-            'images.*' => 'file|max:20480', // ← ここ重要
+            'body'     => ['required', 'string'],
+            'images'   => ['nullable'],
+            'images.*' => ['image', 'max:20480'], // 20MB
         ]);
 
         // 投稿作成
@@ -67,23 +66,23 @@ class PostController extends Controller
             'status'  => '公開',
         ]);
 
-        // ✅ 画像は加工せず、そのまま保存
+        // ✅ 画像保存（管理者投稿と完全互換）
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $i => $file) {
+            $sort = 1;
 
-                $filename = 'posts/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            foreach ($request->file('images') as $file) {
 
-                Storage::disk('public')->putFileAs(
-                    'posts',
-                    $file,
-                    basename($filename)
-                );
+                // storage/app/public/posts/xxxx.jpg
+                $path = $file->store('posts', 'public');
 
                 PostImage::create([
                     'post_id'    => $post->id,
-                    'path'       => $filename,
-                    'sort_order' => $i + 1,
+                    'path'       => $path, // posts/xxxx.jpg
+                    'sort_order' => $sort,
+                    'cover'      => $sort === 1 ? 1 : 0,
                 ]);
+
+                $sort++;
             }
         }
 
@@ -105,14 +104,14 @@ class PostController extends Controller
     }
 
     /**
-     * 編集保存
+     * 編集保存（本文のみ）
      */
     public function update(Request $request, Post $post)
     {
         abort_if($post->user_id !== Auth::id(), 403);
 
         $validated = $request->validate([
-            'body' => 'required|string',
+            'body' => ['required', 'string'],
         ]);
 
         $post->update([
@@ -125,7 +124,7 @@ class PostController extends Controller
     }
 
     /**
-     * 投稿削除
+     * 投稿削除（画像も削除）
      */
     public function destroy(Post $post)
     {

@@ -12,8 +12,10 @@ class TalkMessage extends Model
     protected $fillable = [
         'talk_id',
         'user_id',
+        'type',        // text / image / stamp
         'message',
         'image_path',
+        'stamp_id',
         'read_at',
     ];
 
@@ -21,21 +23,18 @@ class TalkMessage extends Model
         'read_at' => 'datetime',
     ];
 
-    /** 送信者 */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /** トーク */
     public function talk()
     {
-        return $this->belongsTo(Talk::class, 'talk_id');
+        return $this->belongsTo(Talk::class);
     }
 
-    /** 既読判定 */
-    public function isRead(): bool
+    public function stamp()
     {
-        return !is_null($this->read_at);
+        return $this->belongsTo(Stamp::class);
     }
 }

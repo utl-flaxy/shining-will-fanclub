@@ -18,19 +18,18 @@ class TalentTalkController extends Controller
                 $q->where('user_id', Auth::id());
             })
             ->with(['latestMessage', 'fanMembers.user'])
-            ->orderBy('id', 'asc')
+            ->orderByDesc(
+                TalkMessage::select('created_at')
+                    ->whereColumn('talk_messages.talk_id', 'talks.id')
+                    ->latest()
+                    ->limit(1)
+            )
             ->get()
             ->map(function ($room) {
-
-                // 表示名（タレント側）
-                $room->display_name = $room->display_name_talent;
-
-                // ✅ 未読数（相手＝ファンが送信 && read_at NULL）
                 $room->unread_count = TalkMessage::where('talk_id', $room->id)
                     ->where('user_id', '!=', Auth::id())
                     ->whereNull('read_at')
                     ->count();
-
                 return $room;
             });
 
@@ -38,48 +37,59 @@ class TalentTalkController extends Controller
     }
 
     /**
-     * トーク詳細（開いたら既読）
+     * トーク詳細
      */
     public function show($id)
     {
         $room = Talk::whereHas('talentMembers', fn ($q) =>
                 $q->where('user_id', Auth::id())
             )
-            ->with('messages.user')
+            ->with(['messages.user'])
             ->findOrFail($id);
 
-        // ✅ 相手（ファン）からの未読メッセージを既読にする
+        // ファン側の未読を既読に
         TalkMessage::where('talk_id', $room->id)
             ->where('user_id', '!=', Auth::id())
             ->whereNull('read_at')
-            ->update([
-                'read_at' => now(),
-            ]);
+            ->update(['read_at' => now()]);
 
-        $messages = $room->messages;
-
-        return view('talent.talks.show', compact('room', 'messages'));
+        return view('talent.talks.show', [
+            'room'     => $room,
+            'messages' => $room->messages()->orderBy('created_at')->get(),
+        ]);
     }
 
     /**
-     * メッセージ送信（タレント側）
+     * メッセージ送信（複数画像対応）
      */
     public function send(Request $request, $id)
     {
         $request->validate([
-            'message' => 'nullable|string|max:1000',
-            'image'   => 'nullable|image|max:2048',
+            'message'     => 'nullable|string|max:1000',
+            'images.*'    => 'nullable|image|max:8192',
         ]);
 
-        $imagePath = $request->file('image')?->store('talk_images', 'public');
+        // 複数画像
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('talk_images', 'public');
 
-        TalkMessage::create([
-            'talk_id'    => $id,
-            'user_id'    => Auth::id(),
-            'message'    => $request->message,
-            'image_path' => $imagePath,
-            // read_at は NULL（相手が読むまで未読）
-        ]);
+                TalkMessage::create([
+                    'talk_id'    => $id,
+                    'user_id'    => Auth::id(),
+                    'image_path' => $path,
+                ]);
+            }
+        }
+
+        // テキスト
+        if ($request->filled('message')) {
+            TalkMessage::create([
+                'talk_id' => $id,
+                'user_id' => Auth::id(),
+                'message' => $request->message,
+            ]);
+        }
 
         return redirect()->route('talent.talks.show', $id);
     }

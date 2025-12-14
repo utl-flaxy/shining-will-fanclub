@@ -4,45 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>タレント | Shining-Will</title>
-
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <title>@yield('title', 'タレント') | Shining-Will</title>
 
     <style>
         body {
-            margin: 0;
-            font-family: sans-serif;
-            background: #f6f7f9;
+            margin:0;
+            font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+            background:#f6f7f9;
         }
 
         header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
-            font-size: 16px;
-            font-weight: 600;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:14px 16px;
+            background:#fff;
+            border-bottom:1px solid #eee;
+            font-size:16px;
+            font-weight:600;
         }
 
         .notif {
-            position: relative;
-            font-size: 20px;
-            text-decoration: none;
-            color: #333;
+            position:relative;
+            font-size:20px;
+            text-decoration:none;
+            color:#333;
         }
 
         .badge {
-            position: absolute;
-            top: -4px;
-            right: -8px;
-            background: red;
-            color: white;
-            font-size: 11px;
-            border-radius: 50%;
-            padding: 2px 6px;
+            position:absolute;
+            top:-4px;
+            right:-8px;
+            background:red;
+            color:#fff;
+            font-size:11px;
+            border-radius:50%;
+            padding:2px 6px;
         }
     </style>
 </head>
@@ -62,9 +59,6 @@
 </header>
 
 @yield('content')
-
-<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-@stack('scripts')
 
 </body>
 </html>

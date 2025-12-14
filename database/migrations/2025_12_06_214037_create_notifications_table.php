@@ -1,31 +1,25 @@
 <?php
 
-namespace App\Notifications;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
-
-class TalentPostedNotification extends Notification
+return new class extends Migration
 {
-    use Queueable;
-
-    public function __construct(
-        public $post
-    ) {}
-
-    // DB通知のみ
-    public function via($notifiable)
+    public function up(): void
     {
-        return ['database'];
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->json('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
     }
 
-    public function toDatabase($notifiable)
+    public function down(): void
     {
-        return [
-            'type' => 'talent_posted',
-            'post_id' => $this->post->id,
-            'title' => '新しい投稿',
-            'message' => $this->post->user->name . ' さんが新しい投稿をしました',
-        ];
+        Schema::dropIfExists('notifications');
     }
-}
+};

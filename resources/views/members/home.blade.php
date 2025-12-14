@@ -1,12 +1,14 @@
 @extends('members.layouts.app')
 
+@section('title', 'ホーム')
+
 @section('content')
 
 <style>
 .home-wrapper {
     max-width: 480px;
     margin: 0 auto;
-    padding: 20px 16px 90px;
+    padding: 20px 16px;
 }
 
 .home-title {
@@ -21,7 +23,7 @@
     margin-bottom: 20px;
 }
 
-/* ===== カード共通 ===== */
+/* ===== カード ===== */
 .home-card {
     display: flex;
     gap: 14px;
@@ -32,12 +34,6 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     text-decoration: none;
     color: #111;
-}
-
-.home-card.disabled {
-    background: #f5f5f5;
-    color: #aaa;
-    pointer-events: none;
 }
 
 .card-icon {
@@ -87,13 +83,12 @@
 
 <div class="home-wrapper">
 
-    {{-- ===== タイトル ===== --}}
     <div class="home-title">ホーム</div>
     <div class="home-sub">
         Bety の最新情報やお知らせをチェックできます
     </div>
 
-    {{-- ===== トーク ===== --}}
+    {{-- トーク --}}
     <a href="{{ route('members.talks.index') }}" class="home-card">
         <div class="card-icon icon-talk">💬</div>
         <div class="card-main">
@@ -106,7 +101,7 @@
 
             @if(isset($latestTalentMessage))
                 <div class="card-desc" style="color:#333;">
-                    {{ \Illuminate\Support\Str::limit($latestTalentMessage->message, 40) }}
+                    {{ \Illuminate\Support\Str::limit($latestTalentMessage->body, 40) }}
                 </div>
                 <div class="card-desc">
                     {{ $latestTalentMessage->created_at->diffForHumans() }}
@@ -119,7 +114,7 @@
         </div>
     </a>
 
-    {{-- ===== 投稿 ===== --}}
+    {{-- 投稿 --}}
     <a href="{{ route('members.posts.index') }}" class="home-card">
         <div class="card-icon icon-post">📝</div>
         <div class="card-main">
@@ -128,12 +123,11 @@
         </div>
     </a>
 
-    {{-- ===== その他 ===== --}}
     <div style="font-size:13px;color:#666;margin:18px 0 8px;">
         その他
     </div>
 
-    {{-- ===== ショップ ===== --}}
+    {{-- ショップ --}}
     <a href="{{ route('members.items.index') }}" class="home-card">
         <div class="card-icon icon-shop">🛍</div>
         <div class="card-main">
@@ -142,8 +136,8 @@
         </div>
     </a>
 
-    {{-- ===== マイアイテム ===== --}}
-    <a href="{{ route('members.items.owned') }}" class="home-card">
+    {{-- マイアイテム --}}
+    <a href="{{ route('members.items.my') }}" class="home-card">
         <div class="card-icon icon-shop">🎁</div>
         <div class="card-main">
             <div class="card-title">マイアイテム</div>
@@ -151,11 +145,9 @@
         </div>
     </a>
 
-
-
-    {{-- ===== 設定 ===== --}}
+    {{-- 設定 --}}
     <a href="{{ route('members.settings.index') }}" class="home-card">
-        <div class="card-icon icon-setting">⚙</div>
+        <div class="card-icon icon-setting">⚙️</div>
         <div class="card-main">
             <div class="card-title">設定</div>
             <div class="card-desc">アカウント・購入履歴など</div>
@@ -163,8 +155,5 @@
     </a>
 
 </div>
-
-{{-- ✅ 下部ナビ（共通コンポーネント） --}}
-@include('components.members.nav')
 
 @endsection

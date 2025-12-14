@@ -3,21 +3,21 @@
 @section('content')
 
 <style>
-.password-wrapper {
+.page-wrapper {
     max-width: 480px;
     margin: 0 auto;
-    padding: 20px 16px 90px;
+    padding: 24px 16px 120px; /* ← safe bottom */
 }
 
-.password-title {
+.page-title {
     font-size: 20px;
     font-weight: 700;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 /* フォーム */
 .form-group {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .form-label {
@@ -29,51 +29,44 @@
 
 .form-input {
     width: 100%;
-    padding: 12px 14px;
+    padding: 14px;
     border: 1px solid #ddd;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 14px;
-}
-
-.form-error {
-    font-size: 12px;
-    color: #c00;
-    margin-top: 4px;
 }
 
 /* ボタン */
 .save-btn {
     width: 100%;
-    padding: 14px 0;
+    padding: 16px 0;
     background: #111;
     color: #fff;
-    border-radius: 12px;
-    font-size: 14px;
+    border-radius: 999px;
+    font-size: 15px;
     font-weight: 700;
     border: none;
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
-/* 補助リンク */
-.back-link {
-    display: block;
-    text-align: center;
+/* エラー */
+.flash-error {
+    background: #fdecea;
+    color: #b42318;
+    padding: 14px;
+    border-radius: 12px;
     font-size: 13px;
-    color: #555;
-    margin-top: 16px;
-    text-decoration: underline;
+    margin-bottom: 20px;
 }
 </style>
 
-<div class="password-wrapper">
+<div class="page-wrapper">
 
-    <div class="password-title">パスワード変更</div>
+    <div class="page-title">パスワード変更</div>
 
-    {{-- エラーメッセージ --}}
     @if ($errors->any())
-        <div style="margin-bottom:16px;">
+        <div class="flash-error">
             @foreach ($errors->all() as $error)
-                <div class="form-error">・{{ $error }}</div>
+                <div>・{{ $error }}</div>
             @endforeach
         </div>
     @endif
@@ -83,39 +76,22 @@
 
         <div class="form-group">
             <label class="form-label">現在のパスワード</label>
-            <input type="password"
-                   name="current_password"
-                   class="form-input"
-                   required>
+            <input type="password" name="current_password" class="form-input" required>
         </div>
 
         <div class="form-group">
             <label class="form-label">新しいパスワード</label>
-            <input type="password"
-                   name="password"
-                   class="form-input"
-                   required>
+            <input type="password" name="password" class="form-input" required>
         </div>
 
         <div class="form-group">
             <label class="form-label">新しいパスワード（確認）</label>
-            <input type="password"
-                   name="password_confirmation"
-                   class="form-input"
-                   required>
+            <input type="password" name="password_confirmation" class="form-input" required>
         </div>
 
-        <button class="save-btn">
-            変更する
-        </button>
+        <button class="save-btn">変更する</button>
     </form>
 
-    <a href="{{ route('members.settings.account') }}" class="back-link">
-        アカウント情報に戻る
-    </a>
-
 </div>
-
-@include('components.members.nav')
 
 @endsection

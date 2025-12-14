@@ -9,31 +9,18 @@ class Order extends Model
 {
     use HasFactory;
 
-    /*
-    |--------------------------------------------------------------------------
-    | 基本設定
-    |--------------------------------------------------------------------------
-    */
     protected $fillable = [
         'user_id',
         'total_amount',
         'status',
-
-        // ✅ Stripe 無効化のため一旦使わない
+        // Stripe は後でOK
         // 'stripe_payment_intent_id',
         // 'paid_at',
     ];
 
     protected $casts = [
-        // ✅ 現在は手動 or 仮注文管理なので無効
         // 'paid_at' => 'datetime',
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relations
-    |--------------------------------------------------------------------------
-    */
 
     /** 注文ユーザー */
     public function user()
@@ -41,17 +28,11 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    /** 注文商品 */
+    /** 注文明細 */
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Status Helper（Stripeなし前提）
-    |--------------------------------------------------------------------------
-    */
 
     /** 未処理 */
     public function isPending(): bool
@@ -76,12 +57,6 @@ class Order extends Model
     {
         return $this->status === 'canceled';
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | 表示用（管理画面）
-    |--------------------------------------------------------------------------
-    */
 
     /** ステータス表示名 */
     public function getStatusLabelAttribute(): string

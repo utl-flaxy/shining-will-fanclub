@@ -2,21 +2,30 @@
 
 @section('content')
 
-{{-- ヘッダー --}}
-<x-members.header title="デジタル会員証" back="members.settings.index" />
-
 <style>
+.page-wrapper {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 16px 120px;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* 会員証 */
 .membership-card {
-    width: 92%;
-    margin: 20px auto;
-    border-radius: 16px;
+    width: 100%;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
 }
 
 .card-bg {
     width: 100%;
-    aspect-ratio: 16/9;
+    aspect-ratio: 16 / 9;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -26,54 +35,60 @@
     position: absolute;
     left: 16px;
     bottom: 16px;
-    color: white;
+    color: #fff;
 }
 
 .card-label {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.8;
 }
 
 .card-value {
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
+/* QR */
 .qr-area {
     position: absolute;
     right: 16px;
     bottom: 16px;
+    background: #fff;
+    padding: 6px;
+    border-radius: 10px;
 }
 
-.qr-area img {
-    width: 80px;
-    height: 80px;
-    background: white;
-    padding: 5px;
-    border-radius: 8px;
+.qr-area svg {
+    width: 66px;
+    height: 66px;
+    display: block;
 }
 </style>
 
-<div class="membership-card">
+<div class="page-wrapper">
 
-    <div class="card-bg"
-        style="background-color: {{ $color }}; background-image: url('{{ asset('images/membership_card.png') }}');">
+    <div class="page-title">デジタル会員証</div>
 
-        <div class="card-info">
-            <div class="card-label">No.</div>
-            <div class="card-value">{{ $number }}</div>
+    <div class="membership-card">
+        <div class="card-bg"
+             style="
+                background-color: {{ $color }};
+                background-image: url('{{ asset('images/membership_card.png') }}');
+             ">
 
-            <div class="card-label mt-2">ニックネーム</div>
-            <div class="card-value">{{ $user->name }}</div>
+            <div class="card-info">
+                <div class="card-label">No.</div>
+                <div class="card-value">{{ $number }}</div>
 
-            <div class="card-label mt-2">会員種別</div>
-            <div class="card-value">正会員</div>
+                <div class="card-label" style="margin-top:8px;">ニックネーム</div>
+                <div class="card-value">{{ $user->display_name }}</div>
+            </div>
+
+            <div class="qr-area">
+                {!! $qrSvg !!}
+            </div>
+
         </div>
-
-        <div class="qr-area">
-            <img src="{{ asset('images/qrcode_sample.png') }}" alt="QR">
-        </div>
-
     </div>
 
 </div>

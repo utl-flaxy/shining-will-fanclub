@@ -8,8 +8,6 @@ use Filament\Support\Colors\Color;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Auth\Login;
-use Filament\Pages\Dashboard;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -17,6 +15,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Pages\Dashboard;
 use Spatie\Permission\Middlewares\RoleMiddleware;
 
 class AdminPanelProvider extends PanelProvider
@@ -27,16 +26,27 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(Login::class)
+
+            /**
+             * ✅ 重要
+             * Filamentのログイン画面は使わない
+             * （自作 /admin/login を使う）
+             */
+            ->login(false)
+
             ->profile()
+
             ->pages([
                 Dashboard::class,
             ])
+
             ->colors([
                 'primary' => Color::Blue,
             ])
 
-            // 🔥 Filament v3 はここで Middleware を追加
+            /**
+             * ✅ Webセッション + Filament必須Middleware
+             */
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -48,10 +58,15 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
 
-                // 🔥 official のみパネルアクセス許可
+                /**
+                 * ✅ official ロール限定
+                 */
                 RoleMiddleware::class . ':official',
             ])
 
+            /**
+             * ✅ Laravel認証は使う（ログイン済み前提）
+             */
             ->authMiddleware([
                 Authenticate::class,
             ]);

@@ -12,7 +12,8 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
-        'name',
+        'name',          // 本名（原則 表に出さない）
+        'nickname',      // 表示名（超重要）
         'email',
         'password',
         'avatar',
@@ -33,6 +34,22 @@ class User extends Authenticatable
         'is_active_member'  => 'boolean',
     ];
 
+    /* =====================
+       表示用ニックネーム
+       ===================== */
+    public function getDisplayNameAttribute(): string
+    {
+        $nickname = trim((string) $this->nickname);
+
+        if ($nickname !== '') {
+            return $nickname;
+        }
+
+        // 万一 nickname 未設定でも本名は出さない
+        return 'ユーザー' . $this->id;
+    }
+
+    /* ===== relations ===== */
     public function theme()
     {
         return $this->belongsTo(Theme::class);

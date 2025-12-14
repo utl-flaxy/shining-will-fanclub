@@ -1,32 +1,28 @@
 @extends('members.layouts.app')
 
+@section('title', 'ショップ')
+
 @section('content')
 
 <style>
-/* ===== ページ ===== */
-.page-header {
-    padding: 16px;
-    font-size: 18px;
-    font-weight: 700;
-    background: #fff;
-    border-bottom: 1px solid #e0e0ea;
-}
-
 .shop-wrapper {
     max-width: 480px;
     margin: 0 auto;
-    padding: 14px 14px 90px;
-    background: #f7f7fb;
+    padding: 16px;
 }
 
-/* ===== グリッド ===== */
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
 }
 
-/* ===== カード ===== */
 .product-card {
     background: #fff;
     border-radius: 14px;
@@ -34,19 +30,11 @@
     overflow: hidden;
     text-decoration: none;
     color: #111;
-    transition: transform .1s;
 }
 
-.product-card:active {
-    transform: scale(0.98);
-}
-
-/* ===== 画像 ===== */
 .product-image {
-    width: 100%;
     aspect-ratio: 1 / 1;
     background: #eee;
-    overflow: hidden;
 }
 
 .product-image img {
@@ -55,7 +43,6 @@
     object-fit: cover;
 }
 
-/* ===== 情報 ===== */
 .product-body {
     padding: 10px;
 }
@@ -63,8 +50,6 @@
 .product-name {
     font-size: 13px;
     font-weight: 600;
-    line-height: 1.4;
-    margin-bottom: 6px;
 }
 
 .product-price {
@@ -74,46 +59,30 @@
 }
 </style>
 
-<div class="page-header">
-    ショップ
-</div>
-
 <div class="shop-wrapper">
 
+    <div class="page-title">ショップ</div>
+
     @if($products->isEmpty())
-        <div style="text-align:center;color:#777;padding:40px 0;">
-            商品は準備中です
-        </div>
+        <p style="text-align:center;color:#777;">商品は準備中です</p>
     @else
         <div class="product-grid">
-
             @foreach($products as $product)
-                <a href="{{ route('members.shop.show', $product->id) }}"
-                   class="product-card">
-
+                <a href="{{ route('members.shop.show', $product->id) }}" class="product-card">
                     <div class="product-image">
                         @if($product->image_path)
                             <img src="{{ asset('storage/'.$product->image_path) }}">
                         @endif
                     </div>
-
                     <div class="product-body">
-                        <div class="product-name">
-                            {{ $product->name }}
-                        </div>
-                        <div class="product-price">
-                            ¥{{ number_format($product->price) }}
-                        </div>
+                        <div class="product-name">{{ $product->name }}</div>
+                        <div class="product-price">¥{{ number_format($product->price) }}</div>
                     </div>
-
                 </a>
             @endforeach
-
         </div>
     @endif
 
 </div>
-
-@include('components.members.nav')
 
 @endsection

@@ -17,58 +17,46 @@
 
     <div class="page-card">
 
-        <form action="{{ route('admin.posts.store') }}"
-              method="POST"
-              enctype="multipart/form-data">
+    <form action="{{ route('admin.posts.store') }}"
+            method="POST"
+            enctype="multipart/form-data">
+          @csrf
 
-            @csrf
+          {{-- タイトル --}}
+          <div class="form-group">
+              <label class="form-label">タイトル</label>
+              <input type="text" name="title" class="form-input" required>
+          </div>
 
-            {{-- タイトル --}}
-            <div class="form-group">
-                <label class="form-label">タイトル</label>
-                <input type="text" name="title"
-                       class="form-input"
-                       placeholder="例：ライブ告知"
-                       required>
-            </div>
+          {{-- 本文 --}}
+          <div class="form-group">
+          <label class="form-label">本文</label>
+          <textarea name="body" class="form-textarea" rows="6"></textarea>
+          </div>
 
-            {{-- 本文 --}}
-            <div class="form-group">
-                <label class="form-label">本文</label>
-                <textarea name="body"
-                          class="form-textarea"
-                          rows="6"
-                          placeholder="本文を入力してください"></textarea>
-            </div>
+          {{-- 状態 --}}
+          <div class="form-group">
+          <label class="form-label">状態</label>
+              <select name="status" class="form-select">
+                  <option value="公開">公開</option>
+                  <option value="下書き">下書き</option>
+              </select>
+          </div>
 
-            {{-- 状態 --}}
-            <div class="form-group">
-                <label class="form-label">状態</label>
-                <select name="status" class="form-select">
-                    <option value="公開">公開</option>
-                    <option value="下書き">下書き</option>
-                </select>
-            </div>
+          {{-- ✅ 画像（複数対応） --}}
+          <div class="form-group">
+              <label class="form-label">投稿画像</label>
+              <input type="file"
+                  name="images[]"
+                  accept="image/*"
+                  multiple>
+          </div>
 
-            {{-- 画像アップロード + プレビュー --}}
-            <div class="form-group">
-                <label class="form-label">サムネイル画像</label>
-                <input type="file" id="thumbnail" name="image" accept="image/*">
-
-                <div id="preview-area" style="margin-top:10px;">
-                    <img id="preview-img"
-                         src="#"
-                         style="display:none; width:140px; height:140px; object-fit:cover; border-radius:8px; border:1px solid #ddd; padding:4px; background:#fafafa;">
-                </div>
-            </div>
-
-            {{-- ボタン --}}
-            <div class="form-actions">
-                <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">戻る</a>
-                <button type="submit" class="btn btn-primary">保存する</button>
-            </div>
-
-        </form>
+          <div class="form-actions">
+              <a href="{{ route('admin.posts.index') }}" class="btn btn-secondary">戻る</a>
+              <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+    </form>
     </div>
 
     {{-- サムネイルプレビュー JS --}}
